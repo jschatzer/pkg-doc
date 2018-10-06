@@ -189,9 +189,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
     ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
     (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
 
-;;;; ( - / + . )  trivia.level0 asdf/abc cl+ssl
 ;so geht clim macro with-  nicht richtig
-(defun hierarchy-by-symbolname (l)
+(defun hierarchy-by-name (l)
   (remove-empty-bags (pack l)))
 
 #|
@@ -218,7 +217,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ; diese NIL stört constants in clim und cl, so fehlt nil in beiden, geleg zu richten
 (defun hierarchical-category (l) ;package category
   (remove nil
-  (hierarchy-by-symbolname
+  (hierarchy-by-name
     (cw:sym2stg l))))
 
 ;------------------------------------------
@@ -411,7 +410,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ;----------------------------------------------------------------------------------------
 (defun create-menu (l)
   "turn a list into a sorted numbered list"
-  (create-menu% (hierarchy-by-symbolname l)))
+  (create-menu% (hierarchy-by-name l)))
+
 
 (defun create-menu% (l &aux (n 0))
   "insert :items and :value into a tree to create a clim-menu"
