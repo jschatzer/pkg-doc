@@ -139,11 +139,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 ;;; Hierarchy by symbolname ;;;
 
-; (parts 'a-b-c) -> ("a-" "b-" "c")
-#;(defun parts (x) (#~d'(?<=-)' x))
-
 ; (parts "a/b-c") ;("a/" "b-" "c" 
-(defun parts (x) (#~d'(?<=[-./+])' x)) ; cl+ssl bisher das einzige, ev remove + 
+(defun parts (x) (#~d'(?<=[-./+])' x)) ; cl+ssl  -  +gray+ ??  <--- test
 
 ; (key 'a-b-c) -> "A-" ; (key 'a-b-c 1) -> "A-B-"
 (defun key (s &optional (i 0))
@@ -211,7 +208,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 (defun hierarchical-category (l) ;package category
   (hierarchy-by-symbolname
     (cw:sym2stg l)))
-|#
+
 
 ;;; simple hack: (cw:sym2stg '(a b nil t)) ; ("a" "b" NIL "t") 
 ; diese NIL stört constants in clim und cl, so fehlt nil in beiden, geleg zu richten
@@ -219,6 +216,11 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (remove nil
   (hierarchy-by-name
     (cw:sym2stg l))))
+|#
+
+(defun hierarchical-category (l) ;package category
+  (hierarchy-by-name
+    (cw:sym2stg l)))
 
 ;------------------------------------------
 (in-package manifest)
@@ -346,26 +348,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (#~s'(-|_)[^-_]+?(-git|-darcs|-svn|-http|-hg)?$'' 
    (second (#~d' / ' (princ-to-string sys))))) ; ev ql:system-name
 
-
-;----------------------------------
-; ("ABC" ...)
-(defun current-packages ()  
-  (cons "common-lisp" 
-        (sort 
-          (remove-if-not 
-            (lambda (x) (ignore-errors (asdf:find-system (pkg2sys x)))) 
-            (mapcar 'package-name (list-all-packages)))
-          'string<)))
-
-(defun current-packages ()  
-  (cons "COMMON-LISP" 
-        (sort 
-          (remove-if-not 
-            ;(lambda (x) (ignore-errors (asdf:find-system (pkg2sys x)))) 
-            'pkg-symbols
-            (mapcar 'package-name (list-all-packages)))
-          'string<)))
-
 ; "PDF" "PERLRE" "PKG-DOC" "PNGLOAD" "PROVE" "PROVE.ASDF" "PROVE.COLOR"
 (defun current-packages ()  
   "loaded packages with external symbols"
@@ -374,10 +356,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
       'pkg-symbols
       (mapcar 'package-name (list-all-packages)))
     'string<))
+
 ;----------------------------------
-
-
-
 ;                     -- not allways sys name !!
 ;#<SYSTEM cl-oneliner / oneliner-20131003-git / quicklisp 201
 ;(subst "cl-oneliner" "onliner"   .. müßte gehen
@@ -386,18 +366,11 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ; ("abc" ...)
 #+quicklisp
 (defun quicklisp-systems () 
-  (sort (remove-duplicates (mapcar 'ql-system-name (ql:system-list)) :test 'string=) 
-        'string<))
-
-#+quicklisp
-(defun quicklisp-systems () 
   (sublis '(("cl-mssql" . "mssql"))  ; (old . new)
   (sort 
     (remove-duplicates (mapcar 'ql-system-name (ql:system-list)) :test 'string=) 
     'string<)
   :test 'equal))
-
-
 
 ; ("abc" ...)
 #+quicklisp

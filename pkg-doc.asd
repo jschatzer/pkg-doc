@@ -8,6 +8,8 @@
   :serial t
   :depends-on (#:hans-helper
                clim-widgets  ;                manifest nsort ;
+               webmacros
+
                alexandria
                ;asdf
                stdutils
@@ -15,4 +17,5 @@
   :components ((:file "package")
                (:file "pkg-doc")
                (:file "clim")
+               (:file "html")
                (:file "test")))
