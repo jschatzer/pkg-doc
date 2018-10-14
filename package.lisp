@@ -15,9 +15,16 @@ local-systems
 
 ;tests
 pd
+
+;--------------------------------------------------------
+;;; do not export ;;;;;  for testing only, to keep API simple
 ;random-list-item ; h:random-elt
 random-pkg-with-nr-of-ext-symbols
 random-load-system
+random-pkg-info
+random-sys-info
+;--------------------------------------------------------
+
 
 ;;; html part
 ws-start ws-stop

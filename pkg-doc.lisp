@@ -4,39 +4,39 @@
 (named-readtables:in-readtable h:hh)
 
 ;--------------------------------------------------------
-; TESTS
+; TESTS, FOR TESTING ONLY    nach hinten
 ;--------------------------------------------------------
-#;(defun random-list-item (lst)
-  (nth (random (1- (length lst))) lst))
-;(random-list-item '(1 2 3 4 5))
-
-#;(defun random-pkg-with-nr-of-ext-symbols ()
-  (let ((p (random-list-item (current-packages)) ))
-    (list p
-          (length (pkg-symbols p)))))
-
-#;(defun random-load-system ()
-  (let ((s (random-list-item (pkg-doc:quicklisp-systems))))
-    ;(list s
-          (ignore-errors (ql:quickload s))))
-
-#|
-(defun random-load-system ()
-  (let ((s (pkg-doc:random-list-item (pkg-doc:quicklisp-systems))))
-    (list s
-          (multiple-value-bind (a b) (ignore-errors (ql:quickload s))
-           (list a b)))))
-|#
-
 (defun random-pkg-with-nr-of-ext-symbols ()
   (let ((p (h:random-elt (current-packages)) ))
     (list p (length (pkg-symbols p)))))
 
+#+quicklisp
 (defun random-load-system ()
   (let ((s (h:random-elt (quicklisp-systems))))
     (ignore-errors (ql:quickload s))))
 
+;geht gut
+(defun random-pkg-info ()
+  "test sys-info of current packages"
+  (let ((p (h:random-elt (current-packages)) ))
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* p) p)))
 
+;(random-pkg-info)
+
+; ql-sys, noch zu testen
+(defun random-sys-info ()
+  "test sys-info of quicklisp systems"
+  (let ((s (h:random-elt (quicklisp-systems))))
+    (ignore-errors (ql:quickload s))   ; ev if find system
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)))
+
+;The name "SLY" does not designate any package.
+;The name "PARENSCRIPT-CLASSIC" does not designate any package.
+;The name "MONKEYLIB-MARKUP-HTML" does not designate any package.
+;The name "CL-JSON-TEMPLATE" does not designate any package.
+;The name "CL-LIBYAML" does not designate any package.
+
+;(random-sys-info)
 
 
 ;--------------------------------------------------------
@@ -49,33 +49,14 @@
 ; 1) SYSTEM DESCRIPTION
 ;--------------------------------------------------------
 ;include pkg documentation string<-------
-
-(defun pkg-description (s pkg)
-  "system description"
-  (let ((nr (length (pkg-symbols pkg)))
-        (a1 (car (asdf-description pkg)))
-        (a2 (cadr (asdf-description pkg)))
-        (a3 (readme-text pkg)))
-    (format s "Nickname: ~{~a~}~%" (package-nicknames pkg))
-    (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
-
-    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
-"-------------------------
- Package Documentaiton String
--------------------------~2%"))
-
-
-    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
-"-------------------------
- ASDF Description
--------------------------"))
-  (with-drawing-options (s :text-face :bold) (format s "~&SHORT: ")) (format s "~a" a1)
-  (with-drawing-options (s :text-face :bold) (format s "~2&LONG: ")) (format s "~a~%" a2)
-  (with-drawing-options (s :text-face :bold :ink +red+) (format s 
-"-------------------------
- README
--------------------------"))
-  (format s "~&~a" a3)))
+(define-symbol-macro sys-info
+  `((s ,s)
+    (pkg ,pkg)
+    (nr (length (pkg-symbols pkg)))
+    (a1 (car (asdf-description pkg)))
+    (a2 (cadr (asdf-description pkg)))
+    (a3 (readme-text pkg))
+    (nick (package-nicknames pkg))))
 
 ;-----------------------
 ;mit match (a b ...)
@@ -333,12 +314,10 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
         (rec (cdr l))))))
 
 ;--------------------------------------------------------
-; 3) GUI
+; ) MENU  create hierarchical menu to choose a package or a system
 ;--------------------------------------------------------
 
-;==============================================================
-; create hierarchical menu to choose a package or a system
-;==============================================================
+
 ; 1) sorted lists of strings 
 ;---------------------------------------
 ;                     .. / systemname-.... /
@@ -377,5 +356,52 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 (defun local-systems ()
   (if (probe-file my-project-dir) (push my-project-dir ql:*local-project-directories*))
   (sort (ql:list-local-systems) 'string<))
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@END 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;sys-info
+
+(defmacro x ()
+  `(let ,sys-info
+     1))
+
+(h:mac (x))
+
+(defun pkg-description (s pkg)
+  "system description"
+  (let ((nr (length (pkg-symbols pkg)))
+        (a1 (car (asdf-description pkg)))
+        (a2 (cadr (asdf-description pkg)))
+        (a3 (readme-text pkg)))
+    (format s "Nickname: ~{~a~}~%" (package-nicknames pkg))
+    (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
+
+    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+"-------------------------
+ Package Documentaiton String
+-------------------------~2%"))
+
+
+    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+"-------------------------
+ ASDF Description
+-------------------------"))
+  (with-drawing-options (s :text-face :bold) (format s "~&SHORT: ")) (format s "~a" a1)
+  (with-drawing-options (s :text-face :bold) (format s "~2&LONG: ")) (format s "~a~%" a2)
+  (with-drawing-options (s :text-face :bold :ink +red+) (format s 
+"-------------------------
+ README
+-------------------------"))
+  (format s "~&~a" a3)))
 
 
