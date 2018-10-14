@@ -378,28 +378,4 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (if (probe-file my-project-dir) (push my-project-dir ql:*local-project-directories*))
   (sort (ql:list-local-systems) 'string<))
 
-; 2) create hierarchical menu to choose a package or a system. 
-;    Hierarchy by symbol-name: com. cl- asdf/ ...
-;----------------------------------------------------------------------------------------
-(defun create-menu (l)
-  "turn a list into a sorted numbered list"
-  (create-menu% (hierarchy-by-name l)))
-
-
-(defun create-menu% (l &aux (n 0))
-  "insert :items and :value into a tree to create a clim-menu"
-    (mapcar (lambda (x)
-              (if (atom x)
-                (list (lol:mkstr (incf n) #\space x) :value x)
-                (prog1 (cons (lol:mkstr  #\space (car x)) (cons :items (list (create-menu% (cdr x))))) (setf n (1- (+ n (length x))))))) ; geht ~gut
-;                (prog1 (cons (lol:mkstr (text-style-width n)??  #\space (car x)) (cons :items (list (create-menu% (cdr x))))) (setf n (1- (+ n (length x))))))) 
-            l))
-
-(defun print-numbered-pkg (item strm)
-  (if (#~m'[-./]$' (car item))
-    (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
-    (princ (string-downcase (car item)) strm)))
-
-;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
 

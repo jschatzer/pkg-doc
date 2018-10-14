@@ -16,6 +16,6 @@
                repl-utilities)
   :components ((:file "package")
                (:file "pkg-doc")
-               (:file "clim")
-               (:file "html")
+               (:file "gui-clim")
+               (:file "gui-html")
                (:file "test")))

@@ -1,4 +1,4 @@
-;;;; html.lisp
+;;;; gui-html.lisp
 
 ;from html-pkg-doc  <-------
 
@@ -6,6 +6,9 @@
 (named-readtables:in-readtable h:hh)
 (markup:enable-markup-syntax)
 
+;--------------------------------------------------------
+; 0) MENU BAR
+;--------------------------------------------------------
 ;;;; navigation ;;;;;;;;;;;;;;;;;;;;;;;;;,
 ;geht vorerst
 (defun -list2ul (l)
@@ -44,7 +47,8 @@
 ;(defun sys2li (s) #M(:p s))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;,
-(defun html-create-menu (l)
+;(defun html-create-menu (l)
+(defun create-menu-html (l)
   "turn a list into a sorted numbered list"
   ;(html-create-menu% (pkg-doc::hierarchy-by-symbolname l)))
   (html-create-menu% (pkg-doc::hierarchy-by-name l)))
@@ -60,6 +64,9 @@
               (prog1 (cons (lol:mkstr  #\space (car x)) (html-create-menu% (cdr x))) (setf n (1- (+ n (length x)))))))
           l))
 
+;--------------------------------------------------------
+; 0) PKG TREE ???
+;--------------------------------------------------------
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; helper and data for pkgtree
@@ -89,6 +96,10 @@
 (h:p lst (pkg-doc:pkg-tree (h:random-elt (pkg-doc:current-packages))))
 
 ;;;;;
+;--------------------------------------------------------
+; 0) WINDOW
+;--------------------------------------------------------
+
 ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
 (route-html /pkgdoc0 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
   ((i-css jts)
@@ -118,9 +129,36 @@
                                           ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
   (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
+(route-html /pkgdoc1 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css 
+     ("#navigation.ui-menu .ui-menu-item" float left)
+     ;     ("#content #menu" width 200px)
+     ("#menu" width 200px)
+     ;     ("#menu" columns 4)    
+     ("#content ul" columns 2)     ; geht prinzipiell
+     )
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
 ;geht nicht
-(route-html /pkgdoc1 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+(route-html /pkgdoc0x ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
   ((i-css jts)
    (i-css "/jquery.splitter/css/jquery.splitter.css")
    (css 
@@ -157,6 +195,10 @@
 
 ;  ;;;;;;;;;;;;;;;;;;
 ;  
+;--------------------------------------------------------
+; 0) TREE PANE
+;--------------------------------------------------------
+
 ;(route-html /home-tree ()
 ;(route-html /pkgdoc ()
 (route-html /src/pkgtree ()
@@ -354,6 +396,9 @@ $('ul').on('click', 'a', function(){
  
 
 ;.html($(this).attr('id'));
+;--------------------------------------------------------
+; 0) INFO PANE
+;--------------------------------------------------------
 
 (route-html /src/info ()
   ((i-js "https://code.jquery.com/jquery-1.12.4.js")  

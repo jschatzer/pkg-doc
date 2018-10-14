@@ -1,4 +1,4 @@
-;;;; clim.lisp
+;;;; gui-clim.lisp
 
 (in-package #:pkg-doc)
 
@@ -54,6 +54,36 @@
   (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string 'pkg-doc :right 800))
 
 ;--------------------------------------------------------
+; 0) MENU BAR
+;--------------------------------------------------------
+; 2) create hierarchical menu to choose a package or a system. 
+;    Hierarchy by symbol-name: com. cl- asdf/ ...
+;----------------------------------------------------------------------------------------
+;(defun create-menu (l)
+(defun create-menu-clim (l)
+  "turn a list into a sorted numbered list"
+  (create-menu% (hierarchy-by-name l)))
+
+
+(defun create-menu% (l &aux (n 0))
+  "insert :items and :value into a tree to create a clim-menu"
+    (mapcar (lambda (x)
+              (if (atom x)
+                (list (lol:mkstr (incf n) #\space x) :value x)
+                (prog1 (cons (lol:mkstr  #\space (car x)) (cons :items (list (create-menu% (cdr x))))) (setf n (1- (+ n (length x))))))) ; geht ~gut
+;                (prog1 (cons (lol:mkstr (text-style-width n)??  #\space (car x)) (cons :items (list (create-menu% (cdr x))))) (setf n (1- (+ n (length x))))))) 
+            l))
+
+(defun print-numbered-pkg (item strm)
+  (if (#~m'[-./]$' (car item))
+    (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
+    (princ (string-downcase (car item)) strm)))
+
+;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+;--------------------------------------------------------
 ; 4) GUI COMMANDS
 ;--------------------------------------------------------
 (define-pkg-doc-command (packages :menu t) ()
@@ -69,7 +99,7 @@
 
 ; style warning; The variable PKG is defined but never used
 (defun select-pkg (system-category)
-  (let ((pkg (string-upcase (menu-choose (create-menu system-category) 
+  (let ((pkg (string-upcase (menu-choose (create-menu-clim system-category) 
                                          :printer 'print-numbered-pkg :n-columns 5))))
      #+quicklisp(load-package pkg)))
 
