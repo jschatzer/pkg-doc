@@ -158,8 +158,9 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
                  (pack (cdr l) i (list (car l)))))))
 |#
 
+;; das hatte ich bisher
 ;stört clim macro with-     <-----!! 
-(defun remove-empty-bags (l)
+#;(defun remove-empty-bags (l)
   (cond
     ((null l) nil)
     ((atom l) l)
@@ -167,11 +168,63 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
     ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
     (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
 
+;; test
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+;    ((and (consp (car l)) (notany #'consp (car l))) (cons (car l) (remove-empty-bags (cdr l))))
+
+    ((and (consp (car l)) (notany #'consp (car l))) (if (cdr l) 
+                                                      (cons (car l) (remove-empty-bags (cdr l)))
+                                                      (car l)))
+
+
+    ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+; ev work with this
+;cl spec-op multiple = emptybag, sonst gut
+(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+;;; das scheint richtig zu gehen, aber 1) ppcre error?, 2) ql menus sind zu kurz
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (atom (car l)) (consp (cadr l)) (#~m/(car l)/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+;1) package-symobols gehen fast perfekt, ev recursive oder über 2 level, -  clim slot-accessor: command-menu-  is emty-bag
+;2) menus get truncated !! <--
+(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (atom (car l)) (consp (cadr l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+
+
 ;so geht clim macro with-  nicht richtig
 (defun hierarchy-by-name (l)
   (remove-empty-bags (pack l)))
 
 #|
+;; 1.4.19 
+;test 1.4.19, so geht usocket gut, find package with empty bags: alexandria hash- hash-table, hash is empty <------   
+; md5 fill is emtpy
+; common-lisp special-operator multiple- is emtpy
+(defun hierarchy-by-name (l)
+  (pack l))
+
+
+
+;; old
 ;damit geht clim macro with-  richtig
 (defun hierarchy-by-symbolname (l)
   (pack l))
@@ -345,7 +398,11 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ; ("abc" ...)
 #+quicklisp
 (defun quicklisp-systems () 
-  (sublis '(("cl-mssql" . "mssql"))  ; (old . new)
+  (sublis '(
+            ;;; ql-name . system-name
+            ;("cl-mssql" . "mssql") ; 31.3.19 brauchts nicht mehr
+            ;("cl-str" . "str")  ; 31.3.19
+            )  ; (old . new)
   (sort 
     (remove-duplicates (mapcar 'ql-system-name (ql:system-list)) :test 'string=) 
     'string<)

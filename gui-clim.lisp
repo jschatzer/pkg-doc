@@ -86,9 +86,14 @@
 ;    Hierarchy by symbol-name: com. cl- asdf/ ...
 ;----------------------------------------------------------------------------------------
 ;(defun create-menu (l)
-(defun create-menu-clim (l)
+#;(defun create-menu-clim (l)
   "turn a list into a sorted numbered list"
   (create-menu% (hierarchy-by-name l)))
+
+; 1.4.19
+(defun create-menu-clim (l)
+  "turn a list into a sorted numbered list"
+  (create-menu% (pack l)))
 
 
 (defun create-menu% (l &aux (n 0))
@@ -103,7 +108,11 @@
 (defun print-numbered-pkg (item strm)
   (if (#~m'[-./]$' (car item))
     (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
-    (princ (string-downcase (car item)) strm)))
+    (princ 
+      (let ((x (string-downcase (car item)) ))
+        (subseq x 0 (min 25 (length x))))     ; truncate menu item-length, 31.3.19
+      strm)))
+
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -124,7 +133,7 @@
 ; style warning; The variable PKG is defined but never used
 (defun select-pkg (system-category)
   (let ((pkg (string-upcase (menu-choose (create-menu-clim system-category) 
-                                         :printer 'print-numbered-pkg :n-columns 5))))
+                                         :printer 'print-numbered-pkg :n-columns 6))))     ; 5 haben nicht platz, es werden dzt nur 4 angezeigt, ql geht nur bis s...., 31.3.19
      #+quicklisp(load-package pkg)))
 
 ; style warning: The variable SYS is defined but never used
@@ -241,5 +250,10 @@ CONFIGURE-POSSIBILITIES:
 -------------------------"))
   (format s "~&~a" a3)))
 |#
+
+#;(defun print-numbered-pkg (item strm)
+  (if (#~m'[-./]$' (car item))
+    (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
+    (princ (string-downcase (car item)) strm)))
 
 
