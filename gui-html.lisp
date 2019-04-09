@@ -1,4 +1,5 @@
 ;;;; gui-html.lisp
+;copy from fiel 8.4.19
 
 ;https://stackoverflow.com/questions/6316979/selecting-an-element-in-iframe-jquery
 ; $("#containerdiv div").draggable( {containment: "#containerdiv ", scroll: false} );   <----- anschauen
@@ -6,7 +7,7 @@
 ;from html-pkg-doc  <-------
 
 (in-package #:pkg-doc)
-(named-readtables:in-readtable h:hh)
+(named-readtables:in-readtable h:w)
 (markup:enable-markup-syntax)
 (cl-interpol:enable-interpol-syntax)
 
@@ -114,10 +115,27 @@
   "transform an string-item into an html-list-item, without li tags"
   ; item = text; info = href
   ;(destructuring-bind (item &optional info) (reverse (#~d/#\|/ s))
-  (destructuring-bind (item &optional info) (reverse (#~d'\s*§\s*' s))
+  (destructuring-bind (item &optional info) (reverse (#~d'\s*§\s*' s))  ; geht irgendwie, hatte ich bisher
+  ;;;;;(destructuring-bind (item &optional info) (reverse (#~d'\s*:-\s*' s))  ; geht ~gut
     (if info
       #M(:a :href info item)
       #M(:a item))))
+
+;6.4.2019
+(defun item2li (s)
+  "transform an string-item into an html-list-item, without li tags"
+  ; item = text; info = href
+  ;(destructuring-bind (item &optional info) (reverse (#~d/#\|/ s))
+  ;(destructuring-bind (item &optional info) (reverse (#~d'\s*§\s*' s))  ; geht irgendwie
+;  (let ((item (or (second (#~d':-' s)) (first (#~d':-' s)))))  ; geht ~gut
+;    (if info
+;(let ((item (or (second (#~d':-' s)) s)))
+(h:aif (second (#~d':-' s))
+;      #M(:a :href s h:it)
+;      #M(:a :href h:it h:it)
+      #M(:a h:it)
+      #M(:a (#~s'-$'' s))))
+
 
 (defun -tree2ul (tr)
   (let* ((item-strg (if (atom tr) tr (car tr)))
@@ -135,199 +153,14 @@
 ; 0) WINDOW
 ;==============================================================
 ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-(route-html /pkgdoc1 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))     ; geht prinzipiell
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
-
-(route-html /pkgdoc2 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))     ; geht prinzipiell
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-                                          ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text)))))))
-
-                                          ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text.replace (ps:regex "/\d+\s+/") "")))))))
-                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text.replace (ps:regex #?r"/\d*\s*/") "")))))))
-
-                                         ;($ ("#tree" (c (p top.frames "tree") document)) (html (o source (+ "/src/pkgtree?pkg=" (b.item.text.replace (ps:regex "\d+\s+") "")))))
-
-                                           ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text)))))))
-                                         
-                                          )))))
-
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
-
-
-;(autocomplete (o source "/get-symbols"))
-
-;==============================================================
-; 0) TREE PANE
-;==============================================================
-
-;; data ;;;;;;;;;;
-;(h:p lst (pkg-doc:pkg-tree "CL-FAD"))
-(h:p lst (pkg-doc:pkg-tree (h:random-elt (pkg-doc:current-packages))))
-
-;geht gut
-(route-html /src/pkgtree ()
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-  (tree2ul lst)
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   ($ ("#hello" (c (p top.frames "info") document)) 
-                                        (text ($ this (text)))))))))
-
-;test  edit
-;; regex mit cl-interpol s 6 ps
-(route-html /src/pkgtree ()
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-  (tree2ul lst)
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   (let ((item ($ this (text))))
-                                     ($ ("#hello" (c (p top.frames "info") document)) 
-                                        ;(text (+ item " -- " item " -- " (c item (replace (ps:regex "/.*:-/") "")))) ; geht
-                                        (text (+ item " -- " item " -- " (item.replace (ps:regex "/.*:-/") ""))) ; geht
-
-;                                        (text (h:stg (repl-utilities:arglist (item.replace (ps:regex "/.*:-/") ""))))
-
-                                        )))))))
-
-(route-html /src/pkgtree ()
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-;  (tree2ul lst)
-  (tree2ul (pkg-doc:pkg-tree "CL-FAD"))
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   (let ((item ($ this (text))))
-                                     ($ ("#hello" (c (p top.frames "info") document)) 
-;                                        (load (+ "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
-                                        (load (s "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
-
-
-                                        ;(text (+ item " -- " item " -- " (c item (replace (ps:regex "/.*:-/") "")))) ; geht
-;                                        (text (+ item " -- " item " -- " (item.replace (ps:regex "/.*:-/") ""))) ; geht
-
-;                                        (text (h:stg (repl-utilities:arglist (item.replace (ps:regex "/.*:-/") ""))))
-
-;                                        )))))))
-
-;(pkg-doc:pkg-tree (h:random-elt (pkg-doc:current-packages)))
-
-(let ((pkg (h:random-elt (pkg-doc:current-packages))))
-(route-html /src/pkgtree ()
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-;  (tree2ul lst)
-  (tree2ul (pkg-doc:pkg-tree pkg))
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   (let ((item ($ this (text))))
-                                     ($ ("#hello" (c (p top.frames "info") document)) 
-                                        (html pkg)))))))))
-
-;                                        (load (+ "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
-;                                        (load (s "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") "")))))))))))
-;                                        (load (ps:stringify "/arg-list?sym=" (c item (replace (ps:regex "/.*:-/") ""))))))))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;geht mit pkgdoc1
-(let ((pkg (h:random-elt (pkg-doc:current-packages))))
-  (route-html /src/pkgtree ()
-    ((i-css "/jquery-simplefolders/main.css")
-     (css (li white-space nowrap) 
-          ("a:hover" background-color "#81F7BE")))
-    ;  (tree2ul lst)
-    (tree2ul (pkg-doc:pkg-tree pkg))
-
-    (i-js jqm)
-    (i-js "/jquery-simplefolders/main.js")
-    (js ($ ".tree" (on "click" "a" (f0 
-                                     ($ ("#hello" (c (p top.frames "info") document)) 
-                                        ;                                        (text ($ this (text))))))))))
-                                        ;(text (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg))))))))))
-                                        (load (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg))))))))))
-
-(route-html /arg-list (sym pkg)
-  ()
-  (h:stg (repl-utilities:arglist (find-symbol (string-upcase sym) pkg))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-#;(route-html /pkgdoc3 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))     ; geht prinzipiell
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
-                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") "")))))))))))))  ; geht
-
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+; siehe gui-html.8.4.19.lisp for more
+;nur pkgdoc4, geht ~gut,  
+;und 9 , geht nicht gut
+;und 10 zum testen behalten
+;ladet langsam wegen warnings dot operator
 
 ;geht prinzipiell
-(route-html /pkgdoc4 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+#;(route-html /pkgdoc4 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
   ((i-css jts)
    (i-css "/jquery.splitter/css/jquery.splitter.css")
    (css ("#navigation.ui-menu .ui-menu-item" float left)
@@ -359,17 +192,18 @@
   (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
 
-;geht nicht
-(route-html /pkgdoc5 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+;remove dot operator, geht
+(route-html /pkgdoc4 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
   ((i-css jts)
    (i-css "/jquery.splitter/css/jquery.splitter.css")
    (css ("#navigation.ui-menu .ui-menu-item" float left)
      ("#menu" width 200px)
-     ("#content ul" columns 2))
+     ("#content ul" columns 2))     ; geht prinzipiell
    (css (".splitter_panel .vsplitter" background-color gray width 3px)))
   (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
   (:br)
   (:div :id "content"
+;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
         (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
         (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
   (:div :id "pkg")
@@ -378,140 +212,23 @@
   (i-js "/jquery.splitter/js/jquery.splitter.js")
   (js ($ "#navigation" (menu (o select (f (x y) 
                                           ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                                          (cond ((equal (c y item (text)) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (c y item (text)) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (c y item (text)) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
                                           ($ "#menu" (menu (o select (f (a b) 
-                                                                        ;($ "#pkg" 
+                                                                        ($ "#pkg" 
                                                                            ;($ ("#tree" (c (p top.frames "tree") document)) 
-                                                                           ($ "#content #tree" ;(c (p top.frames "tree") document)) 
-;                                                                           ($ ("body" (c (p top.frames "tree") document)) 
-                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+                                                                           (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))))))))))
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
-(route-html /pkgdoc6 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg" "")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
-                                          ($ "#menu" (menu (o select (f (a b) 
-                                                                        ;($ "#pkg" 
-                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
-                                                                           ;($ "#content #tree" ;(c (p top.frames "tree") document)) 
-;                                                                           ($ ("body" (c (p top.frames "tree") document)) 
+;old
+; return jQuery('#pkg').load(['/src/pkgtree?pkg=', b.item.text().replace(/^\d*\s*/, '')].join(''));
 
-;                                                                           ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-;                                                                           ($ "div iframe#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-;                                                                           ($ (c (p top.frames "tree") document) (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-;                                                                           ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-
-;                                                                           ($ ("#tree" (c (p top.frames "tree") document)) (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-                                                                           ($ ("#tree" (c (p top.frames "tree") document)) (attr "prop" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-
-;                                                                         ($ ("#tree" (c (p top.frames "tree") document))   (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-
-                                                                           ;(load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+;new
+; return jQuery('#pkg').load(['/src/pkgtree?pkg=', b.item.text.replace(/^\d*\s*/, '')].join(''));
 
 #|
-<script>
-  $('#changeframe').click(function () {
-                                         $('#declinedframe').attr('src', 'http://stackoverflow.com');
-                                           });
-  </script>
-|#
-
-(route-html /pkgdoc7 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))     ; geht prinzipiell
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg" "")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
-                                          ($ "#menu" (menu (o select (f (a b) 
-;                                                                        ($ "#pkg" 
-;                                                                         ($ "#content" 
-                                                                         ;($ "#content #tree" 
-
-;                                                                           ($ ("html" (p top.frames "tree")) 
-                                                                           ($ ("#tree" (p top.frames "tree")) 
-
-                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
-                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
-
-(route-html /pkgdoc8 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
-  ((i-css jts)
-   (i-css "/jquery.splitter/css/jquery.splitter.css")
-   (css ("#navigation.ui-menu .ui-menu-item" float left)
-     ("#menu" width 200px)
-     ("#content ul" columns 2))     ; geht prinzipiell
-   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
-  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
-  (:br)
-  (:div :id "content"
-;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
-        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
-  (:div :id "pkg" "")
-  (i-js jq3.3)
-  (i-js ui1.12)
-  (i-js "/jquery.splitter/js/jquery.splitter.js")
-  (js ($ "#navigation" (menu (o select (f (x y) 
-                                          ($ "#content" (html 
-                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
-                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
-                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
-;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
-                                          ($ "#menu" (menu (o select (f (a b) 
-                                                                        ;($ "#pkg" 
-;                                                                           ($ ("#tree" ($ "iframe" (contents)))
-;($ "iframe#tree"
-;($ "#content iframe"                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
- ($ "#content iframe #tree"                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
-                                                                          ;($ ("#content" (c (p top.frames "tree") document)) 
-                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
-
-  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
-
-;Another syntax: $("textarea", $("iframe").contents()).keydown(...) –
-
-
 (route-html /pkgdoc9 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
   ((i-css jts)
    (i-css "/jquery.splitter/css/jquery.splitter.css")
@@ -537,99 +254,119 @@
                                                                         ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
   (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
+; 8.4.19
+(route-html /pkgdoc10 ()
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  ;(list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules" "navigation"))  ;???
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg" "")
+  ;(i-js jq)
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
 
-;;;; geht
-(route-html /src/pkgtree (pkg)
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-  (tree2ul (pkg-doc:pkg-tree pkg))
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   ($ ("#hello" (c (p top.frames "info") document)) 
-                                      (load (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg)))))))))
+     ;(js ($ ("#info" (c (p top.frames "info") document)) (:style "background:red")))
+(js 
+  ;(w:doc-ready
+  ;($ "iframe#info" (contents) (find "#hello") (css "background-color" "red"))
+  ($ "iframe#info" (contents) (find "#hello") (text "background-color"))
+  )
 
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
 
-;/src/pkgtree?pkg=CL-FAD
-
-;(c ($ this (text)) (replace (ps:regex "/.*:-/") ""))
-;
-;-------------------------------------------------------
-#| clim display function
-(defun disp-info (f p) 
-  (declare (ignore f))
-  (let* ((pkg (cw:item-name (cw:group *application-frame*)))
-         (inf-ap-fr (info *application-frame*))
-         (sym (find-symbol (string-upcase inf-ap-fr) pkg)))
-    (flet ((doc-stg (f)
-             (with-drawing-options (p :text-face :bold) (format p "~2%Documentation String:~%"))
-             (princ (or (manifest::docs-for sym f) "no-doc-string") p)))
-      (dolist (what manifest::*categories*)
-        (when (manifest::is sym what) 
-          (cond 
-            ((#~m'^Help' inf-ap-fr) (with-drawing-options (p :ink +blue+) (format p (info *application-frame*))))
-            ((string= inf-ap-fr pkg) (sys-info-clim p pkg))
-            ((member what '(:function :macro :generic-function :slot-accessor)) 
-             (with-drawing-options (p :text-face :bold) (format p "~@:(~a~):~a~2%Argument List:~%" pkg sym))
-             (color-lambda p (repl-utilities:arglist sym))
-             (unless (null sym) (doc-stg what)))
-            ((member what '(:variable :class :constant :condition)) 
-             (unless (null sym) (doc-stg what)))
-            (t "there could be other documantation??")))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                        ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") "")))))))))))))
+      ;; test
+      ;($ ("#tree" (c (p top.frames "tree") document)) (:style "background:red"))
+      ;..........
+      ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 |#
-;-----------------------------------------------------------------
 
-#;(route-html /src/pkgtree ()
-  ((i-css "/jquery-simplefolders/main.css")
-   (css (li white-space nowrap) 
-        ("a:hover" background-color "#81F7BE")))
-  ;(let ((pkg (h:random-elt (pkg-doc:current-packages))))
-  ;  (tree2ul (pkg-doc:pkg-tree pkg))
-  ;(tree2ul lst)
-  (tree2ul (pkg-doc:pkg-tree "CL-FAD"))
-  (i-js jqm)
-  (i-js "/jquery-simplefolders/main.js")
-  (js ($ ".tree" (on "click" "a" (f0 
-                                   ($ ("#hello" (c (p top.frames "info") document)) 
-                                      (text ;(if (equal ($ this (text)) (lisp pkg))
-                                              (lisp (sys-info-clim *standard-output* pkg))                    
-                                              ;($ this (text))
-                                              ;"hello"
-                                              )))))))
+
+;; ; ;($ ("#tree" (c (p top.frames "tree") document)) 
+;; ; ;($ ("#content" (c (p top.frames "tree") document)) 
+;; ; 
+;; ; ;https://www.learningjquery.com/2016/09/using-jquery-to-access-iframe-elements
+;; ; $(document).ready(function(){
+;; ; var iFrameDOM = $("iframe#frameID").contents();
+;; ; 
+;; ; iFrameDOM.find(".page").css("background-color", "#fff");
+;; ; 
+;; ; ;($ "iframe#info" (content) (find "body") (css "background-color" "red"))
+;; ; 
+;; ; ;--------------------------------
 
 
 
-;(if (string= 
-; ((string= inf-ap-fr pkg) (sys-info-clim p pkg))
-
-; sys-info-html (s pkg)
-
+;==============================================================
+; 0) TREE PANE
+;==============================================================
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #|
-;;;;;;;;
-;geht ;;; http://acer/src/pkgtree?pkg=CL-FAD
-;optional geht nicht??
-;(route-html /src/pkgtree (&optional (pkg "CL-FAD"))
-(route-html /src/pkgtree (pkg)
+;geht mit pkgdoc1
+(let ((pkg (h:random-elt (pkg-doc:current-packages))))
+  (route-html /src/pkgtree ()
+    ((i-css "/jquery-simplefolders/main.css")
+     (css (li white-space nowrap) 
+          ("a:hover" background-color "#81F7BE")))
+    ;  (tree2ul lst)
+    (tree2ul (pkg-doc:pkg-tree pkg))
+
+    (i-js jqm)
+    (i-js "/jquery-simplefolders/main.js")
+    (js ($ ".tree" (on "click" "a" (f0 
+                                     ($ ("#hello" (c (p top.frames "info") document)) 
+                                        ;                                        (text ($ this (text))))))))))
+                                        ;(text (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg))))))))))
+                                        (load (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg))))))))))
+|#
+
+;-------------------------------------------------
+; 6.4.19
+#;(route-html /src/pkgtree (pkg)
   ((i-css "/jquery-simplefolders/main.css")
    (css (li white-space nowrap) 
         ("a:hover" background-color "#81F7BE")))
-;  (tree2ul lst)
   (tree2ul (pkg-doc:pkg-tree pkg))
   (i-js jqm)
   (i-js "/jquery-simplefolders/main.js")
   (js ($ ".tree" (on "click" "a" (f0 
                                    ($ ("#hello" (c (p top.frames "info") document)) 
-                                        (text ($ this (text)))))))))
+                                      (load (ps:stringify "/arg-list?sym=" ($ this (text)) "&pkg=" (lisp pkg)))))))))
 
-|#
-
-;(h:p lst (pkg-doc:pkg-tree "CL-FAD"))
+(route-html /src/pkgtree (pkg)
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+  (tree2ul (pkg-doc:pkg-tree pkg))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   ($ ("#hello" (c (p (c top frames) "info") document)) 
+                                      (load (ps:stringify "/arg-list?sym=" ($ this (text)) "&pkg=" (lisp pkg)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;==============================================================
 ; 0) INFO PANE
 ;==============================================================
+;keep format
+(route-html /arg-list (sym pkg)
+  ()
+  #M(:pre (:code (with-output-to-string (*standard-output*) (h:d (find-symbol (string-upcase sym) pkg))))))
+
 (route-html /src/info ()
   ((i-js "https://code.jquery.com/jquery-1.12.4.js")  
    (i-js "https://code.jquery.com/ui/1.12.1/jquery-ui.js")
@@ -941,5 +678,423 @@ $('ul').on('click', 'a', function(){
 
 #;(route-txt /arg-list (sym)
 (h:stg (repl-utilities:doc (find-symbol (string-upcase sym)))))
+
+(route-html /pkgdoc1 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+(route-html /pkgdoc2 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+                                          ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text)))))))
+
+                                          ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text.replace (ps:regex "/\d+\s+/") "")))))))
+                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text.replace (ps:regex #?r"/\d*\s*/") "")))))))
+
+                                         ;($ ("#tree" (c (p top.frames "tree") document)) (html (o source (+ "/src/pkgtree?pkg=" (b.item.text.replace (ps:regex "\d+\s+") "")))))
+
+                                           ;($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text)))))))
+                                         
+                                          )))))
+
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+
+;(autocomplete (o source "/get-symbols"))
+
+#;(route-html /pkgdoc3 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") "")))))))))))))  ; geht
+
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+;geht nicht
+(route-html /pkgdoc5 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                        ;($ "#pkg" 
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+                                                                           ($ "#content #tree" ;(c (p top.frames "tree") document)) 
+;                                                                           ($ ("body" (c (p top.frames "tree") document)) 
+                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+(route-html /pkgdoc6 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg" "")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                        ;($ "#pkg" 
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+                                                                           ;($ "#content #tree" ;(c (p top.frames "tree") document)) 
+;                                                                           ($ ("body" (c (p top.frames "tree") document)) 
+
+;                                                                           ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+;                                                                           ($ "div iframe#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+;                                                                           ($ (c (p top.frames "tree") document) (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+;                                                                           ($ "#tree" (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+
+;                                                                           ($ ("#tree" (c (p top.frames "tree") document)) (attr "src" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+                                                                           ($ ("#tree" (c (p top.frames "tree") document)) (attr "prop" (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+
+;                                                                         ($ ("#tree" (c (p top.frames "tree") document))   (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+
+                                                                           ;(load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+#|
+<script>
+  $('#changeframe').click(function () {
+                                         $('#declinedframe').attr('src', 'http://stackoverflow.com');
+                                           });
+  </script>
+|#
+
+(route-html /pkgdoc7 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg" "")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+;                                                                        ($ "#pkg" 
+;                                                                         ($ "#content" 
+                                                                         ;($ "#content #tree" 
+
+;                                                                           ($ ("html" (p top.frames "tree")) 
+                                                                           ($ ("#tree" (p top.frames "tree")) 
+
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+(route-html /pkgdoc8 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg" "")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (cond ((equal (y.item.text) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+                                                                ((equal (y.item.text) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+                                                                ((equal (y.item.text) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))))
+;                                          ($ "#menu" (menu (o select (f (a b) ($ "#pkg" (text (b.item.text))))))))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                        ;($ "#pkg" 
+;                                                                           ($ ("#tree" ($ "iframe" (contents)))
+;($ "iframe#tree"
+;($ "#content iframe"                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+ ($ "#content iframe #tree"                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+                                                                          ;($ ("#content" (c (p top.frames "tree") document)) 
+                                                                           (load (ps:stringify "/src/pkgtree?pkg=" (c (b.item.text) (replace (ps:regex "/^\\d*\\s*/") ""))))))))))))))
+
+  (js ($ "#content" (height (- window.inner-Height 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+;Another syntax: $("textarea", $("iframe").contents()).keydown(...) –
+
+
+
+
+
+
+;/src/pkgtree?pkg=CL-FAD
+
+;(c ($ this (text)) (replace (ps:regex "/.*:-/") ""))
+;
+;-------------------------------------------------------
+#| clim display function
+(defun disp-info (f p) 
+  (declare (ignore f))
+  (let* ((pkg (cw:item-name (cw:group *application-frame*)))
+         (inf-ap-fr (info *application-frame*))
+         (sym (find-symbol (string-upcase inf-ap-fr) pkg)))
+    (flet ((doc-stg (f)
+             (with-drawing-options (p :text-face :bold) (format p "~2%Documentation String:~%"))
+             (princ (or (manifest::docs-for sym f) "no-doc-string") p)))
+      (dolist (what manifest::*categories*)
+        (when (manifest::is sym what) 
+          (cond 
+            ((#~m'^Help' inf-ap-fr) (with-drawing-options (p :ink +blue+) (format p (info *application-frame*))))
+            ((string= inf-ap-fr pkg) (sys-info-clim p pkg))
+            ((member what '(:function :macro :generic-function :slot-accessor)) 
+             (with-drawing-options (p :text-face :bold) (format p "~@:(~a~):~a~2%Argument List:~%" pkg sym))
+             (color-lambda p (repl-utilities:arglist sym))
+             (unless (null sym) (doc-stg what)))
+            ((member what '(:variable :class :constant :condition)) 
+             (unless (null sym) (doc-stg what)))
+            (t "there could be other documantation??")))))))
+|#
+;-----------------------------------------------------------------
+
+#;(route-html /src/pkgtree ()
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+  ;(let ((pkg (h:random-elt (pkg-doc:current-packages))))
+  ;  (tree2ul (pkg-doc:pkg-tree pkg))
+  ;(tree2ul lst)
+  (tree2ul (pkg-doc:pkg-tree "CL-FAD"))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   ($ ("#hello" (c (p top.frames "info") document)) 
+                                      (text ;(if (equal ($ this (text)) (lisp pkg))
+                                              (lisp (sys-info-clim *standard-output* pkg))                    
+                                              ;($ this (text))
+                                              ;"hello"
+                                              )))))))
+
+
+
+;(if (string= 
+; ((string= inf-ap-fr pkg) (sys-info-clim p pkg))
+
+; sys-info-html (s pkg)
+
+#|
+;;;;;;;;
+;geht ;;; http://acer/src/pkgtree?pkg=CL-FAD
+;optional geht nicht??
+;(route-html /src/pkgtree (&optional (pkg "CL-FAD"))
+(route-html /src/pkgtree (pkg)
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+;  (tree2ul lst)
+  (tree2ul (pkg-doc:pkg-tree pkg))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   ($ ("#hello" (c (p top.frames "info") document)) 
+                                        (text ($ this (text)))))))))
+
+|#
+
+;(h:p lst (pkg-doc:pkg-tree "CL-FAD"))
+
+;;;; geht
+(route-html /src/pkgtree (pkg)
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+  (tree2ul (pkg-doc:pkg-tree pkg))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   ($ ("#hello" (c (p top.frames "info") document)) 
+                                      (load (ps:stringify "/arg-list?sym=" (c ($ this (text)) (replace (ps:regex "/.*:-/") "")) "&pkg=" (lisp pkg)))))))))
+; only arglist
+(route-html /arg-list (sym pkg)
+  ()
+  (h:stg (repl-utilities:arglist (find-symbol (string-upcase sym) pkg))))
+
+;6.3.19 geht auch, describe
+(route-html /arg-list (sym pkg)
+  ()
+  (with-output-to-string (*standard-output*) (h:d (find-symbol (string-upcase sym) pkg))))
+
+
+;; data ;;;;;;;;;;
+;(h:p lst (pkg-doc:pkg-tree "CL-FAD"))
+(h:p lst (pkg-doc:pkg-tree (h:random-elt (pkg-doc:current-packages))))
+
+;geht gut
+(route-html /src/pkgtree ()
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+  (tree2ul lst)
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   ($ ("#hello" (c (p top.frames "info") document)) 
+                                        (text ($ this (text)))))))))
+
+;test  edit
+;; regex mit cl-interpol s 6 ps
+(route-html /src/pkgtree ()
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+  (tree2ul lst)
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   (let ((item ($ this (text))))
+                                     ($ ("#hello" (c (p top.frames "info") document)) 
+                                        ;(text (+ item " -- " item " -- " (c item (replace (ps:regex "/.*:-/") "")))) ; geht
+                                        (text (+ item " -- " item " -- " (item.replace (ps:regex "/.*:-/") ""))) ; geht
+
+;                                        (text (h:stg (repl-utilities:arglist (item.replace (ps:regex "/.*:-/") ""))))
+
+                                        )))))))
+
+(route-html /src/pkgtree ()
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+;  (tree2ul lst)
+  (tree2ul (pkg-doc:pkg-tree "CL-FAD"))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   (let ((item ($ this (text))))
+                                     ($ ("#hello" (c (p top.frames "info") document)) 
+;                                        (load (+ "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
+                                        (load (s "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
+
+
+                                        ;(text (+ item " -- " item " -- " (c item (replace (ps:regex "/.*:-/") "")))) ; geht
+;                                        (text (+ item " -- " item " -- " (item.replace (ps:regex "/.*:-/") ""))) ; geht
+
+;                                        (text (h:stg (repl-utilities:arglist (item.replace (ps:regex "/.*:-/") ""))))
+
+;                                        )))))))
+
+;(pkg-doc:pkg-tree (h:random-elt (pkg-doc:current-packages)))
+
+(let ((pkg (h:random-elt (pkg-doc:current-packages))))
+(route-html /src/pkgtree ()
+  ((i-css "/jquery-simplefolders/main.css")
+   (css (li white-space nowrap) 
+        ("a:hover" background-color "#81F7BE")))
+;  (tree2ul lst)
+  (tree2ul (pkg-doc:pkg-tree pkg))
+  (i-js jqm)
+  (i-js "/jquery-simplefolders/main.js")
+  (js ($ ".tree" (on "click" "a" (f0 
+                                   (let ((item ($ this (text))))
+                                     ($ ("#hello" (c (p top.frames "info") document)) 
+                                        (html pkg)))))))))
+
+;                                        (load (+ "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") ""))))))))))
+;                                        (load (s "/arg-list?sym=" (item.replace (ps:regex "/.*:-/") "")))))))))))
+;                                        (load (ps:stringify "/arg-list?sym=" (c item (replace (ps:regex "/.*:-/") ""))))))))))))
 
 

@@ -1,5 +1,22 @@
 ;;;; pkg-doc.lisp
 
+; http://quickdocs.org/  <-------
+
+#|
+; https://www.quicklisp.org/beta/releases.html
+
+Project release   Provided systems
+1am-20141106-git  1am
+3b-swf-20120107-git 3b-swf-swc, 3b-swf
+
+library - QL-RELEASE vs SYSTEM vs PKG  <----  4.4.19
+;------------------------
+
+Please note that some systems have different names than their projects. 
+For example, to load cl-yacc's system, 
+run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
+|#
+
 (in-package #:pkg-doc)
 (named-readtables:in-readtable h:hh)
 
@@ -19,7 +36,8 @@
 (defun random-pkg-info ()
   "test sys-info of current packages"
   (let ((p (h:random-elt (current-packages)) ))
-    (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* p) p)))
+    ;(format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* p) p)))
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* p) p)))    ; 4.4.19
 
 ;(random-pkg-info)
 
@@ -28,6 +46,7 @@
   "test sys-info of quicklisp systems"
   (let ((s (h:random-elt (quicklisp-systems))))
     (ignore-errors (ql:quickload s))   ; ev if find system
+    ;(format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* (sys2pkg s)) s)))
     (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)))
 
 ;The name "SLY" does not designate any package.
@@ -118,6 +137,10 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ; ev post-edit pkg-tree with css-selectors??
 (defun pkg-tree (p) (cons (package-name p) (insert-what (symbol-groups p))))
 
+;; alfabet sort
+;pkg-tree-a
+;(defun pkg-tree (p) (cons (package-name p) (alfabet p)))
+
 ;;; Hierarchy by symbolname ;;;
 
 ; (parts "a/b-c") ;("a/" "b-" "c" 
@@ -185,7 +208,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 ; ev work with this
 ;cl spec-op multiple = emptybag, sonst gut
-(defun remove-empty-bags (l)
+#;(defun remove-empty-bags (l)
   (cond
     ((null l) nil)
     ((atom l) l)
@@ -201,11 +224,22 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 ;1) package-symobols gehen fast perfekt, ev recursive oder über 2 level, -  clim slot-accessor: command-menu-  is emty-bag
 ;2) menus get truncated !! <--
-(defun remove-empty-bags (l)
+#;(defun remove-empty-bags (l)
   (cond
     ((null l) nil)
     ((atom l) l)
     ((and (atom (car l)) (consp (cadr l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+; e.g. pkg inner-conditional
+;dieses "inner" macht with- probleme
+; (... "inner" ("inner-" "inner-case" "inner-ccas ....
+;(#~m'\W$' (car l))   hinzugetan
+(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (atom (car l)) (consp (cadr l)) (#~m'\W$' (car l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
     (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
 
 
@@ -376,9 +410,42 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ;                     .. / systemname-.... /
 ;                        / cffi_0.19.0 /     und diverse andere
 ; #<QL-DIST:SYSTEM zsort / zsort-20120520-git / quicklisp 2015-06-08>) 
-(defun ql-system-name (sys) 
+#;(defun ql-system-name (sys) 
   (#~s'(-|_)[^-_]+?(-git|-darcs|-svn|-http|-hg)?$'' 
    (second (#~d' / ' (princ-to-string sys))))) ; ev ql:system-name
+
+#|
+;; 6.4.2019 test new 
+;#<QL-DIST:SYSTEM cl-pattern / cl-pattern-20140713-git / quicklisp 2019-03-07>
+;#<QL-DIST:SYSTEM cl-pattern-benchmark / cl-pattern-20140713-git / quicklisp 2019-03-07>
+;-----
+;; über 1 seite, nicht jedes cl-glfw[*] ist ein pkg?? The name "CL-GLFW-OPENGL-ARB_HALF_FLOAT_VERTEX" does not designate any package.
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_float / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_gather / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_mirrored_repeat / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_multisample / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_rectangle / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_rg / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_rgb10_a2ui / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_texture_swizzle / cl-glfw-20150302-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cl-glfw-opengl-arb_timer_query / cl-glfw-20150302-git / quicklisp 2019-03-07>
+
+ #<QL-DIST:SYSTEM cffi-examples / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-grovel / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-libffi / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-objects / cffi-objects-20140713-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-objects.tests / cffi-objects-20140713-git / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-tests / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-tests/example / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-toolchain / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi-uffi-compat / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi/c2ffi / cffi_0.20.0 / quicklisp 2019-03-07>
+ #<QL-DIST:SYSTEM cffi/c2ffi-generator / cffi_0.20.0 / quicklisp 2019-03-07>
+
+|#
+; dzt 3188 systems, 6.4.19
+(defun ql-system-name (sys) 
+  (second (#~d' ' (princ-to-string sys))))
 
 ; "PDF" "PERLRE" "PKG-DOC" "PNGLOAD" "PROVE" "PROVE.ASDF" "PROVE.COLOR"
 (defun current-packages ()  
@@ -402,6 +469,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
             ;;; ql-name . system-name
             ;("cl-mssql" . "mssql") ; 31.3.19 brauchts nicht mehr
             ;("cl-str" . "str")  ; 31.3.19
+            ("cl-groupby" . "groupby")
+            ("cl-sphinx" . "sphinx")
             )  ; (old . new)
   (sort 
     (remove-duplicates (mapcar 'ql-system-name (ql:system-list)) :test 'string=) 
@@ -415,6 +484,21 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (sort (ql:list-local-systems) 'string<))
 
 
+; 2.4.19 -------------------------------------------
+;alfabet sort, e.g. to see all with- symbols in cl or clim
+#;(defun alfabet (p)
+  (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<))))
+
+;; cl update-instance-  is empty bag
+(defun alfabet (p)
+ (remove-empty-bags (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<)))))
+
+
+
+;beide gehen
+;(alfabet :nsort)
+;(alfabet "NSORT")
+;----------------------------------------------------
 
 
 
@@ -423,16 +507,8 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-@END 
+;@END 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;sys-info
-
-(defmacro x ()
-  `(let ,sys-info
-     1))
-
-(h:mac (x))
 
 (defun pkg-description (s pkg)
   "system description"
@@ -440,7 +516,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
         (a1 (car (asdf-description pkg)))
         (a2 (cadr (asdf-description pkg)))
         (a3 (readme-text pkg)))
-    (format s "Nickname: ~{~a~}~%" (package-nicknames pkg))
+    (format s "Nickname: ~{~a ~}~%" (package-nicknames pkg))
     (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
 
     (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
@@ -460,5 +536,17 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
  README
 -------------------------"))
   (format s "~&~a" a3)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@END 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;sys-info
+
+(defmacro x ()
+  `(let ,sys-info
+     1))
+
+(h:mac (x))
 
 

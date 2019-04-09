@@ -9,7 +9,7 @@
 (defmacro sys-info-clim (s pkg)
   "system description"
   `(let* ,sys-info
-    (format s "Nickname: ~{~a~}~%" nick)
+    (format s "Nicknames: ~{~(~a~)  ~}~%" nick)  ; example with more nicknames: clazy
     (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
 
     (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
@@ -163,7 +163,7 @@
          (ignore-errors (create-tview  pkg))))
 
 
-
+;; 2.4.19 ev pkg-tree-a   für alfabet sort
 (defun create-tview (pkg)
   (cw-utils::t2h-r (pkg-tree pkg))
   (with-application-frame (f) 
@@ -171,7 +171,12 @@
     (redisplay-frame-panes f :force-p t)))
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+;(define-pkg-doc-command (alfabet :menu t) ()
+; ;;;;;;;;;; (setf (info *application-frame*) (format t "~{~&  ~a~}" (sort *modules* 'string<))))
+; use toggle pkg-tree pkg-tree-a   function call  <----
+;)
 
+;---------
 (define-pkg-doc-command show-info ((item 'string :gesture :select))   
   (setf (info *application-frame*) item))
 
