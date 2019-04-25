@@ -32,21 +32,15 @@ run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
   (let ((s (h:random-elt (quicklisp-systems))))
     (ignore-errors (ql:quickload s))))
 
-;geht gut
 (defun random-pkg-info ()
   "test sys-info of current packages"
   (let ((p (h:random-elt (current-packages)) ))
-    ;(format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* p) p)))
-    (format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* p) p)))    ; 4.4.19
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* p) p)))
 
-;(random-pkg-info)
-
-; ql-sys, noch zu testen
 (defun random-sys-info ()
   "test sys-info of quicklisp systems"
   (let ((s (h:random-elt (quicklisp-systems))))
-    (ignore-errors (ql:quickload s))   ; ev if find system
-    ;(format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* (sys2pkg s)) s)))
+    (ignore-errors (ql:quickload s))
     (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)))
 
 ;The name "SLY" does not designate any package.
@@ -54,6 +48,9 @@ run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
 ;The name "MONKEYLIB-MARKUP-HTML" does not designate any package.
 ;The name "CL-JSON-TEMPLATE" does not designate any package.
 ;The name "CL-LIBYAML" does not designate any package.
+;The name "ARCHITECTURE.BUILDER-PROTOCOL/TEST" does not designate any package.
+;The name "EC2" does not designate any package.
+;The name "FOREIGN-ARRAY" does not designate any package.
 
 ;(random-sys-info)
 
@@ -169,68 +166,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
                    (r-add-header v i))
                  (pack (cdr l) i (list (car l)))))))
 
-#|
-;geht richtig!!!, 30.4.17
-(defun pack (l &optional (i 0) v)
-  (cond ((null l) (if (= 1 (length v)) v (list (cons (key (car v) i) (pack (reverse v) (1+ i))))))
-        ((null v) (pack (cdr l) i (list (car l))))
-        ((equal (key (car v) i) (key (car l) i)) (pack (cdr l) i (push (car l) v)))
-        (t (cons (if (= 1 (length v))
-                   (car v)
-                   (cons (key (car v) i) (pack (reverse v) (1+ i))))
-                 (pack (cdr l) i (list (car l)))))))
-|#
-
-;; das hatte ich bisher
-;stört clim macro with-     <-----!! 
-#;(defun remove-empty-bags (l)
-  (cond
-    ((null l) nil)
-    ((atom l) l)
-    ((and (consp (car l)) (notany #'consp (car l))) (cons (car l) (remove-empty-bags (cdr l))))
-    ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
-    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
-
-;; test
-#;(defun remove-empty-bags (l)
-  (cond
-    ((null l) nil)
-    ((atom l) l)
-;    ((and (consp (car l)) (notany #'consp (car l))) (cons (car l) (remove-empty-bags (cdr l))))
-
-    ((and (consp (car l)) (notany #'consp (car l))) (if (cdr l) 
-                                                      (cons (car l) (remove-empty-bags (cdr l)))
-                                                      (car l)))
-
-
-    ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
-    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
-
-; ev work with this
-;cl spec-op multiple = emptybag, sonst gut
-#;(defun remove-empty-bags (l)
-  (cond
-    ((null l) nil)
-    ((atom l) l)
-    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
-
-;;; das scheint richtig zu gehen, aber 1) ppcre error?, 2) ql menus sind zu kurz
-#;(defun remove-empty-bags (l)
-  (cond
-    ((null l) nil)
-    ((atom l) l)
-    ((and (atom (car l)) (consp (cadr l)) (#~m/(car l)/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
-    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
-
-;1) package-symobols gehen fast perfekt, ev recursive oder über 2 level, -  clim slot-accessor: command-menu-  is emty-bag
-;2) menus get truncated !! <--
-#;(defun remove-empty-bags (l)
-  (cond
-    ((null l) nil)
-    ((atom l) l)
-    ((and (atom (car l)) (consp (cadr l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
-    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
-
 ; e.g. pkg inner-conditional
 ;dieses "inner" macht with- probleme
 ; (... "inner" ("inner-" "inner-case" "inner-ccas ....
@@ -242,27 +177,9 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
     ((and (atom (car l)) (consp (cadr l)) (#~m'\W$' (car l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
     (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
 
-
-
 ;so geht clim macro with-  nicht richtig
 (defun hierarchy-by-name (l)
   (remove-empty-bags (pack l)))
-
-#|
-;; 1.4.19 
-;test 1.4.19, so geht usocket gut, find package with empty bags: alexandria hash- hash-table, hash is empty <------   
-; md5 fill is emtpy
-; common-lisp special-operator multiple- is emtpy
-(defun hierarchy-by-name (l)
-  (pack l))
-
-
-
-;; old
-;damit geht clim macro with-  richtig
-(defun hierarchy-by-symbolname (l)
-  (pack l))
-|#
 
 ;--------------------------------------------
 (defun pkg-symbols (pkg) (loop for s being the external-symbols of pkg collect s))
@@ -271,20 +188,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   "return a sorted list of all symbols in a category"
   (sort (loop for sym in (pkg-symbols pkg) 
               when (manifest::is sym what) collect sym) #'nsort:nstring<))
-
-#|
-(defun hierarchical-category (l) ;package category
-  (hierarchy-by-symbolname
-    (cw:sym2stg l)))
-
-
-;;; simple hack: (cw:sym2stg '(a b nil t)) ; ("a" "b" NIL "t") 
-; diese NIL stört constants in clim und cl, so fehlt nil in beiden, geleg zu richten
-(defun hierarchical-category (l) ;package category
-  (remove nil
-  (hierarchy-by-name
-    (cw:sym2stg l))))
-|#
 
 (defun hierarchical-category (l) ;package category
   (hierarchy-by-name
@@ -301,26 +204,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 (define-category :constant (symbol what)
   (:is (constant-p symbol)))
-
-
-#|
-;; clim colors +cyan+ are in clim variables, remove them <----
-
-; manifest definitions ev edit ??
-(define-category :variable (symbol what)
-  (:is (and (variable-p symbol) (not (is symbol :constant))))
-  (:docs   (documentation symbol 'variable)))
-
-(define-category :constant (symbol what)
-  (:is (and (variable-p symbol) (constantp symbol)))
-  (:docs (documentation symbol 'variable)))
-
-(defun variable-p (name)
-    (ignore-errors (boundp name)))
-
-(defun function-p (name)
-    (ignore-errors (fdefinition name)))
-|#
 
 (defun function-p (x)
   (and 
@@ -344,27 +227,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (and (member (#~s'\+''g (symbol-name x)) clim-internals::*xpm-x11-colors* :test 'equalp :key 'fourth)
        (#~m'^\+.+\+$' (symbol-name x))))
 ;|#
-
-#|
-;simplify clim colors, make them fast
-;;(240 248 255 "alice blue") (240 248 255 "AliceBlue") 
-;so ginge es ~richtig, ist aber sehr langsam
-(defun clim-color-p (x)
-  (and (member (#~s'\+''g (symbol-name x)) clim-internals::*xpm-x11-colors* :test 'equalp :key (lambda (x) (#~s' '-'g (fourth x))))
-       (#~m'^\+.+\+$' (symbol-name x))))
-|#
-
-
-#|
-(defun clim-color-names ()
-  (mapcar (lambda (x) (string-upcase (#~s'(.*)'+\1+'(#~s' '-'g x))))
-          (mapcar #'fourth clim-internals::*xpm-x11-colors*)))
-
-(defun clim-color-p (x)
-  (member (symbol-name x) (clim-color-names) :test 'equal))
-|#
-
-
 
 ;------------------------------------------
 ;(in-package clim-pkg-doc)
@@ -403,8 +265,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ;--------------------------------------------------------
 ; ) MENU  create hierarchical menu to choose a package or a system
 ;--------------------------------------------------------
-
-
 ; 1) sorted lists of strings 
 ;---------------------------------------
 ;                     .. / systemname-.... /
@@ -493,19 +353,6 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 (defun alfabet (p)
  (remove-empty-bags (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<)))))
 
-
-
-;beide gehen
-;(alfabet :nsort)
-;(alfabet "NSORT")
-;----------------------------------------------------
-
-
-
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;@END 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -548,5 +395,140 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
      1))
 
 (h:mac (x))
+
+;;;;;
+#|
+;geht richtig!!!, 30.4.17
+(defun pack (l &optional (i 0) v)
+  (cond ((null l) (if (= 1 (length v)) v (list (cons (key (car v) i) (pack (reverse v) (1+ i))))))
+        ((null v) (pack (cdr l) i (list (car l))))
+        ((equal (key (car v) i) (key (car l) i)) (pack (cdr l) i (push (car l) v)))
+        (t (cons (if (= 1 (length v))
+                   (car v)
+                   (cons (key (car v) i) (pack (reverse v) (1+ i))))
+                 (pack (cdr l) i (list (car l)))))))
+|#
+
+;; das hatte ich bisher
+;stört clim macro with-     <-----!! 
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (consp (car l)) (notany #'consp (car l))) (cons (car l) (remove-empty-bags (cdr l))))
+    ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+;; test
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+;    ((and (consp (car l)) (notany #'consp (car l))) (cons (car l) (remove-empty-bags (cdr l))))
+
+    ((and (consp (car l)) (notany #'consp (car l))) (if (cdr l) 
+                                                      (cons (car l) (remove-empty-bags (cdr l)))
+                                                      (car l)))
+
+
+    ((and (= 2 (length l)) (atom (car l)) (consp (cadr l))) (remove-empty-bags (cadr l)))
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+; ev work with this
+;cl spec-op multiple = emptybag, sonst gut
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+;;; das scheint richtig zu gehen, aber 1) ppcre error?, 2) ql menus sind zu kurz
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (atom (car l)) (consp (cadr l)) (#~m/(car l)/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+;1) package-symobols gehen fast perfekt, ev recursive oder über 2 level, -  clim slot-accessor: command-menu-  is emty-bag
+;2) menus get truncated !! <--
+#;(defun remove-empty-bags (l)
+  (cond
+    ((null l) nil)
+    ((atom l) l)
+    ((and (atom (car l)) (consp (cadr l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
+
+#|
+;; 1.4.19 
+;test 1.4.19, so geht usocket gut, find package with empty bags: alexandria hash- hash-table, hash is empty <------   
+; md5 fill is emtpy
+; common-lisp special-operator multiple- is emtpy
+(defun hierarchy-by-name (l)
+  (pack l))
+
+
+
+;; old
+;damit geht clim macro with-  richtig
+(defun hierarchy-by-symbolname (l)
+  (pack l))
+|#
+
+
+#|
+(defun hierarchical-category (l) ;package category
+  (hierarchy-by-symbolname
+    (cw:sym2stg l)))
+
+
+;;; simple hack: (cw:sym2stg '(a b nil t)) ; ("a" "b" NIL "t") 
+; diese NIL stört constants in clim und cl, so fehlt nil in beiden, geleg zu richten
+(defun hierarchical-category (l) ;package category
+  (remove nil
+  (hierarchy-by-name
+    (cw:sym2stg l))))
+|#
+
+
+#|
+;; clim colors +cyan+ are in clim variables, remove them <----
+
+; manifest definitions ev edit ??
+(define-category :variable (symbol what)
+  (:is (and (variable-p symbol) (not (is symbol :constant))))
+  (:docs   (documentation symbol 'variable)))
+
+(define-category :constant (symbol what)
+  (:is (and (variable-p symbol) (constantp symbol)))
+  (:docs (documentation symbol 'variable)))
+
+(defun variable-p (name)
+    (ignore-errors (boundp name)))
+
+(defun function-p (name)
+    (ignore-errors (fdefinition name)))
+|#
+
+#|
+;simplify clim colors, make them fast
+;;(240 248 255 "alice blue") (240 248 255 "AliceBlue") 
+;so ginge es ~richtig, ist aber sehr langsam
+(defun clim-color-p (x)
+  (and (member (#~s'\+''g (symbol-name x)) clim-internals::*xpm-x11-colors* :test 'equalp :key (lambda (x) (#~s' '-'g (fourth x))))
+       (#~m'^\+.+\+$' (symbol-name x))))
+|#
+
+
+#|
+(defun clim-color-names ()
+  (mapcar (lambda (x) (string-upcase (#~s'(.*)'+\1+'(#~s' '-'g x))))
+          (mapcar #'fourth clim-internals::*xpm-x11-colors*)))
+
+(defun clim-color-p (x)
+  (member (symbol-name x) (clim-color-names) :test 'equal))
+|#
+
+
 
 

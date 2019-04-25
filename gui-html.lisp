@@ -1,6 +1,8 @@
 ;;;; gui-html.lisp
 ;copy from fiel 8.4.19
 
+; https://jqueryui.com/resizable/  <---
+
 ;https://stackoverflow.com/questions/6316979/selecting-an-element-in-iframe-jquery
 ; $("#containerdiv div").draggable( {containment: "#containerdiv ", scroll: false} );   <----- anschauen
 
@@ -222,6 +224,39 @@
                                                                            (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))))))))))
       ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
 
+;;;; trivia:match  -- test -- 11.4.19 geht <--- cool
+;; is copy von oben pkgdoc4
+(route-html /pkgdoc5 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ "#content" (html 
+                                                          (trivia:match (c y item (text))
+                                                            ("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+                                                            ("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+                                                            ("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                        ($ "#pkg" 
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+                                                                           (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))))))))))
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+
 ;old
 ; return jQuery('#pkg').load(['/src/pkgtree?pkg=', b.item.text().replace(/^\d*\s*/, '')].join(''));
 
@@ -308,6 +343,327 @@
 ;; ; ;($ "iframe#info" (content) (find "body") (css "background-color" "red"))
 ;; ; 
 ;; ; ;--------------------------------
+
+(route-html /pkgdoc4 ()   ;    is the same as  ;(route-html /pkgdoc19 ()    ;from html-pkg-doc
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+;        (:iframe :src "/src/pkgtree" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ 
+                                            "#content" 
+                                             ;"body"
+                                             (html 
+
+;geht                                               
+#;(cond ((equal (c y item (text)) "packages") (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (pkg-doc::current-packages))) "menu")))
+      ((equal (c y item (text)) "quicklisp") (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (pkg-doc::quicklisp-systems))) "menu")))
+      ((equal (c y item (text)) "local-libs") (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (pkg-doc::local-systems))) "menu"))))
+
+;scheint doch nicht zu gehen!!
+#;(trivia:match (c y item (text))
+("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))
+
+(case (c y item (text))
+  ("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+  ("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+  ("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))
+
+
+
+                                                          ))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" "/src/pkgtree?pkg=NSORT"))
+
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+
+                                                                          ($ "#pkg" (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                          ))))))))
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+;-----
+(route-html /pkgdoc4 ()
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js ($ "#navigation" (menu (o select (f (x y) 
+                                          ($ 
+                                            "#content" 
+                                             ;"body"
+                                             (html 
+(case (c y item (text))
+  ("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+  ("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+  ("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" "/src/pkgtree?pkg=NSORT"))
+
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+
+                                                                          ($ "#pkg" (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                          ))))))))
+;($ "#navigation" (text
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+
+
+;zum testen, ist copy von oben
+;14.4.19
+(route-html /pkgdoc4 ()
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :src "/src/pkgtree?pkg=CLIM" :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "") ;there must be content, to have a closing tag
+        (:iframe :src "/src/info" :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" ""))
+  (:div :id "pkg")
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js 
+    ;($ ("#content" (c (p top.frames "tree") document)) (attr "background-color" "#FFFFFF"))
+
+    
+    ($ 
+        "#navigation" 
+         ;"#navigation:nth-child(1)" (append
+         ;"#navigation:contains('packages')" (append
+
+
+         (menu (o select (f (x y) 
+                                          ($ 
+                                            "#content" 
+                                             ;"body"
+                                             (html 
+(case (c y item (text))
+  ("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+  ("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+  ("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+    ;($ ("#content" (c (p top.frames "tree") document)) (attr "background-color" "#FFFFFF"))
+
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" "/src/pkgtree?pkg=NSORT"))
+
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+
+                                                                           ;; geht wie oben
+                                                                          ($ "#pkg" (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                          ;($ ("#content" (c (p top.frames "tree") document)) (append (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") ""))))))
+
+
+                                                                          ))))))))
+;($ "#navigation" (text
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+(route-html /iframe-test ()
+  ((i-css jts)
+   (i-css "/jquery.splitter/css/jquery.splitter.css")
+   (css ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2))     ; geht prinzipiell
+   (css (".splitter_panel .vsplitter" background-color gray width 3px)))
+  (list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:br)
+  (:div :id "content"
+        (:iframe :name "tree" :id "tree" :marginwidth "0" :marginheight "0" :scrolling "yes" "iframe tree")
+        (:iframe :name "info" :id "info" :marginwidth "0" :marginheight "0" :scrolling "yes" "iframe info"))
+  (i-js jq3.3)
+  (i-js ui1.12)
+  (i-js "/jquery.splitter/js/jquery.splitter.js")
+  (js 
+    (c console (log ($ ("#content" (c (p (c top frames) "tree") document)) (length)))) ; ($ "body" (text "hello"))) ;(style "background-color" "#FFFFFF")))
+
+    
+    #;($ 
+        "#navigation" 
+         ;"#navigation:nth-child(1)" (append
+         ;"#navigation:contains('packages')" (append
+
+
+         (menu (o select (f (x y) 
+                                          ($ 
+                                            "#content" 
+                                             ;"body"
+                                             (html 
+(case (c y item (text))
+  ("packages" (lisp (sys-tree2ul (create-menu-html (cons "MENUpackages" (current-packages))) "menu")))
+  ("quicklisp" (lisp (sys-tree2ul (create-menu-html (cons "MENUquicklisp" (quicklisp-systems))) "menu")))
+  ("local-libs" (lisp (sys-tree2ul (create-menu-html (cons "MENUlocal-libs" (local-systems))) "menu"))))))
+                                          ($ "#menu" (menu (o select (f (a b) 
+    ;($ ("#content" (c (p top.frames "tree") document)) (attr "background-color" "#FFFFFF"))
+
+                                                                           ;($ ("#tree" (c (p top.frames "tree") document)) 
+
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                           ;($ ("#tree" (c (p (c top frames) "tree") document)) (attr "src" "/src/pkgtree?pkg=NSORT"))
+
+                                                                           ;($ ("#content" (c (p top.frames "tree") document)) 
+
+                                                                           ;; geht wie oben
+                                                                          ($ "#pkg" (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") "")))))
+                                                                          ;($ ("#content" (c (p top.frames "tree") document)) (append (load (s "/src/pkgtree?pkg=" (c b item (text) (replace (r "/^\\d*\\s*/") ""))))))
+
+
+                                                                          ))))))))
+;($ "#navigation" (text
+      ($ "#content" (height (- (c window inner-Height) 100)) (split (o orientation "vertical" position "50%" limit 10)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; without iframes
+; https://stackoverflow.com/questions/5199368/resizable-split-screen-divs-using-jquery-ui
+
+(route-html /test2 ()
+  ((i-css jts)
+   (i-css "//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css")
+   ;(i-js "https://code.jquery.com/jquery-1.9.1.min.js")
+   ;(i-js "https://code.jquery.com/ui/1.12.1/jquery-ui.js")
+   (i-js jq3.3)
+   (i-js ui1.12)
+   (css
+     ("#div1, #div2" 
+      position absolute
+      left 0
+      right 0
+      outline "solid 1px #ccc"     ; /* just for making the divs visible */
+      margin 5px)   ; /* just for making the divs visible */
+     ("#div1" 
+      overflow-y auto    ; div can scroll ?!
+      height 100px
+      top 0)
+     ("#div2" 
+      top 110px
+      bottom 0)
+     ;;;
+     ("#navigation.ui-menu .ui-menu-item" float left)
+     ("#menu" width 200px)
+     ("#content ul" columns 2)
+     ;;;;;
+     ))
+  ;(list2ul '("packages" "quicklisp" "local-libs" "cl-apropos" "ql-apropos" "help" "features" "modules") "navigation")
+  (:div :id "div1" "1st")
+  (:div :id "div2" "2nd")
+  (js 
+    ($ "#div2" ($ "ul" (load "/src/pkgtree?pkg=CL-FAD ul")))
+
+    ;($ "#div2" ($ "body" (c jQery (load "/src/pkgtree?pkg=CL-FAD"))))
+    ($ "#div1" (resizable (o
+                            handles "s"
+                            resize resizeEventHandler)))
+    ;($ "body" (load "/src/pkgtree?pkg=CL-FAD")) ; geht
+    (defun resizeEventHandler (event ui)
+      (var new_height (c ui size height))
+      ($ "#div2" (css "top" (+ new_height 10))))))
+
+
+;; geht horzontal
+(route-html /test1 ()
+  ((i-css "//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css")
+   (i-js "https://code.jquery.com/jquery-1.9.1.min.js")
+   (i-js "https://code.jquery.com/ui/1.12.1/jquery-ui.js")
+   (css
+     ("#div1, #div2" 
+      position absolute
+      left 0
+      right 0
+      outline "solid 1px #ccc"     ; /* just for making the divs visible */
+      margin 5px)   ; /* just for making the divs visible */
+     ("#div1" 
+      height 100px
+      top 0)
+     ("#div2" 
+      top 110px
+      bottom 0)))
+  (:div :id "div1" "1st")
+  (:div :id "div2" "2nd")
+  (js ($ "#div1" (resizable (o
+                              handles "s"
+                              resize resizeEventHandler)))
+      (defun resizeEventHandler (event ui)
+        (var new_height (c ui size height))
+        ($ "#div2" (css "top" (+ new_height 10))))))
+
+
+
+(route-html /test ()
+ (
+#>A1
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+ <style> 
+#div1, #div2 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  outline: solid 1px #ccc; /* just for making the divs visible */
+  margin: 5px; /* just for making the divs visible */
+}
+#div1 {
+  height: 100px;
+  top: 0;
+}
+#div2 {
+  top: 110px;
+  bottom: 0;
+}
+</style>
+A1
+)
+#>A2
+    <div id="div1">1st</div> 
+    <div id="div2">2nd</div>
+<script>
+$('#div1').resizable({
+  handles: 's',
+  resize: resizeEventHandler
+});
+function resizeEventHandler(event, ui){
+  var new_height = ui.size.height;
+  $('#div2').css('top', new_height + 10);
+}
+</script>
+A2)
 
 
 
