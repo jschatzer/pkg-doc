@@ -1,10 +1,10 @@
 ;;;; package.lisp
 
-(defpackage #:pkg-doc
+(defpackage pkg-doc
   (:documentation "package and system info")
 ;  (:use #:cl)
   (:use clim clim-lisp
-        webmacros    ; cl ??
+;        webmacros
         )
 
   (:export pkg-tree create-menu
@@ -14,6 +14,7 @@ quicklisp-systems
 local-systems
 
 ;tests
+;pkg-doc
 pd
 
 ;--------------------------------------------------------
@@ -27,8 +28,24 @@ random-sys-info
 
 
 ;;; html part
-ws-start ws-stop
+;ws-start ws-stop  ; brauchts nicht, use w:..
     ))
+
+
+
+#|
+(defpackage gui-clim
+  (:documentation "")
+  (:use clim clim-lisp)
+  (:export pd))
+
+(defpackage gui-html
+  (:documentation "")
+  (:use cl webmacros)
+  (:export))
+|#
+
+
 
 
 ;  (:use cl webmacros)

@@ -1,6 +1,7 @@
 ;;;; pkg-doc.lisp
 
 ; http://quickdocs.org/  <-------
+; ev boobin to wrap lines/words in REAME ??  26.4.19
 
 #|
 ; https://www.quicklisp.org/beta/releases.html
@@ -35,13 +36,60 @@ run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
 (defun random-pkg-info ()
   "test sys-info of current packages"
   (let ((p (h:random-elt (current-packages)) ))
-    (format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* p) p)))
+    ;(format nil "Description:~&~a~2%Package-Name: ~a~%" (sys-info-clim *standard-output* p) p)))   ; def in gui-clim
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* p) p)))   ; def in gui-clim
 
-(defun random-sys-info ()
+#;(defun random-sys-info ()
   "test sys-info of quicklisp systems"
   (let ((s (h:random-elt (quicklisp-systems))))
     (ignore-errors (ql:quickload s))
     (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)))
+
+
+;(packages-in-system :pkg-doc)
+(defun packages-in-system (s)
+  "new packages after loading a system, with dependency packages/systems"
+  (h:ql (asdf:system-depends-on (asdf:find-system s)))
+  (let ((x (list-all-packages)))
+    ;(ql:quickload s)
+    (ignore-errors (ql:quickload s))
+    (mapcar (h:compose 'string-downcase 'package-name) (set-difference (list-all-packages) x))))
+
+;28.4.2019
+;(random-sys-info)
+#;(defun random-sys-info ()
+  "test sys-info of quicklisp systems"
+  (let* ((s (h:random-elt (quicklisp-systems)))
+         (dep (packages-in-system s)))
+    (format nil "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)
+    (format nil "system ~a has Packages: ~{~&- ~a~}" s dep)))
+
+
+;--------------------------------
+;; ev rename, or factor out dependency packages
+; 26.4.2019
+#;(defun packages-in-system (s)
+  "new packages after loading a system, with dependency packages/systems"
+  (let ((x (list-all-packages)))
+    ;(ql:quickload s)
+    (ignore-errors (ql:quickload s))
+    (mapcar (h:compose 'string-downcase 'package-name) (set-difference (list-all-packages) x))))
+
+; ("myweb.config" "com.ravenbrook.common-lisp-log" "trivial-utf-8" "myweb" "myweb.util" "myweb.handler")
+;(packages-in-system :myweb)
+;--------------------------------
+
+(defun random-sys-info ()
+  "test sys-info of quicklisp systems"
+  (let* ((s (h:random-elt (quicklisp-systems)))
+        (new-packages (packages-in-system s)))
+    ;(ignore-errors (ql:quickload s))
+    (format t "Description:~&~a~2%Package-Name: ~a~%" (pkg-description *standard-output* (sys2pkg s)) s)
+    (format t "~&------------------------------------")
+    (format t "~&loading system ~a loads these new packages: ~{~&- ~a~}" s new-packages)))
+
+
+
 
 ;The name "SLY" does not designate any package.
 ;The name "PARENSCRIPT-CLASSIC" does not designate any package.
@@ -59,8 +107,8 @@ run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
 ; 0) CONFIGURE
 ;--------------------------------------------------------
 ;1) adapt local-libs - optionally add a directory to quicklisp/local-projects??, ev append a list of dirs, ev config.lisp
-(defvar my-project-dir #P"~/src/lisp/") ; my-libs ??, export function?
-
+;(defvar my-project-dir #P"~/src/lisp/") ; my-libs ??, export function?
+(defvar my-project-dir #P"~/common-lisp/")
 ;--------------------------------------------------------
 ; 1) SYSTEM DESCRIPTION
 ;--------------------------------------------------------
@@ -76,7 +124,7 @@ run (ql:quickload "yacc"), not (ql:quickload "cl-yacc").
 
 ;-----------------------
 ;mit match (a b ...)
-(defun asdf-description (sys)
+#;(defun asdf-description (sys)
   (let ((x (asdf/system:find-system (pkg2sys sys))))
     (list (asdf/system:system-description x) (asdf/system:system-long-description x))))
 
@@ -132,11 +180,28 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ; 2) SYMBOL-TREE
 ;--------------------------------------------------------
 ; ev post-edit pkg-tree with css-selectors??
-(defun pkg-tree (p) (cons (package-name p) (insert-what (symbol-groups p))))
+;  ev vereinfachen und function etc schon hier entfernen?
+;  ("CL-FAD"
+;   ("function:-" "function:-canonical-pathname"
+;    ("function:-copy-" "function:-copy-file" "function:-copy-stream")
+;    "function:-delete-directory-and-files"
+(defun pkg-tree (p) 
+  "exported symbols of a package in a hierachical tree-form"
+  (cons (package-name p) 
+        (insert-what (symbol-groups p))))
 
 ;; alfabet sort
 ;pkg-tree-a
 ;(defun pkg-tree (p) (cons (package-name p) (alfabet p)))
+
+;; cl update-instance-  is empty bag
+;  ("CL-FAD" "*default-template*" "cannot-create-temporary-file"
+;    "canonical-pathname" ("copy-" "copy-file" "copy-stream")
+;     "delete-directory-and-files"
+(defun alfabet (p)
+  (cons (package-name p) 
+        (remove-empty-bags (pack (cw:sym2stg (sort (pkg-symbols p) 'string<))))))
+
 
 ;;; Hierarchy by symbolname ;;;
 
@@ -174,7 +239,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (cond
     ((null l) nil)
     ((atom l) l)
-    ((and (atom (car l)) (consp (cadr l)) (#~m'\W$' (car l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))  ; CL-PPCRE:PPCRE-SYNTAX-ERROR -  Quantifier '*' not allowed. at position 0 in string "*application-frame*"
+    ((and (atom (car l)) (consp (cadr l)) (#~m'\W$' (car l)) (#~m/(ppcre:quote-meta-chars (car l))/ (caadr l))) (cadr l))
     (t (cons (remove-empty-bags (car l)) (remove-empty-bags (cdr l))))))
 
 ;so geht clim macro with-  nicht richtig
@@ -343,20 +408,60 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
   (if (probe-file my-project-dir) (push my-project-dir ql:*local-project-directories*))
   (sort (ql:list-local-systems) 'string<))
 
+#|
+;doch überlegen, da viele nicht eigene in src/lisp
+;;; ev gar nicht machen??
+;; dzt nur afp-fts  backward-parenscript  cedilla  cldoc  clim-chess  ernestine  gsharp  Lindenmayer  mbe  mcclide  mcclim-desktop  rip-l-0.4  system-index.txt in local-projects
+;geht nicht, da  es auch im gui dropdown menu getrennt werden muß!!! <-----
+;separate dirs to see what is in what, 26.4.19
+#+quicklisp
+(defun local-systems ()
+  (if (probe-file my-project-dir) 
+    (append 
+      ;simplyfy !!!
+      ;dzt viele nicht directories --> nil ,eg permuted-symbol-index-a.html etc ??
+      (sort
+        (remove ".git"
+          (remove nil
+            (mapcar (lambda (x) (sixth (pathname-directory x)))
+              (fad:list-directory
+                my-project-dir))) :test 'equal) 'string<)
+      (sort (ql:list-local-systems) 'string<))))
+|#
 
-; 2.4.19 -------------------------------------------
-;alfabet sort, e.g. to see all with- symbols in cl or clim
-#;(defun alfabet (p)
-  (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<))))
-
-;; cl update-instance-  is empty bag
-(defun alfabet (p)
- (remove-empty-bags (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;@END 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;(defun pkg-description (s pkg)
+  "system description"
+  (let ((nr (length (pkg-symbols pkg)))
+        (a1 (car (asdf-description pkg)))
+        (a2 (cadr (asdf-description pkg)))
+        (a3 (readme-text pkg)))
+    (format s "Nickname: ~{~a ~}~%" (package-nicknames pkg))
+    (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
 
+    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+"-------------------------
+ Package Documentaiton String
+-------------------------~2%"))
+
+
+    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+"-------------------------
+ ASDF Description
+-------------------------"))
+  (with-drawing-options (s :text-face :bold) (format s "~&SHORT: ")) (format s "~a" a1)
+  (with-drawing-options (s :text-face :bold) (format s "~2&LONG: ")) (format s "~a~%" a2)
+  (with-drawing-options (s :text-face :bold :ink +red+) (format s 
+"-------------------------
+ README
+-------------------------"))
+  (format s "~&~a" a3)))
+
+
+;rename sys-descr
 (defun pkg-description (s pkg)
   "system description"
   (let ((nr (length (pkg-symbols pkg)))
@@ -530,5 +635,10 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 |#
 
 
+
+; 2.4.19 -------------------------------------------
+;alfabet sort, e.g. to see all with- symbols in cl or clim
+#;(defun alfabet (p)
+  (pkg-doc::pack (cw:sym2stg (sort (pkg-doc::pkg-symbols p) 'string<))))
 
 

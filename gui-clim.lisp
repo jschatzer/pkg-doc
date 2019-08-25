@@ -1,7 +1,12 @@
 ;;;; gui-clim.lisp
 
 (in-package #:pkg-doc)
+;(in-package gui-clim)
 (named-readtables:in-readtable h:hh)
+
+;geht
+;(print (pkg-doc:pkg-tree "HANS-HELPER"))
+;@END
 
 ;==============================================================
 ; 0) SYS-INFO
@@ -37,14 +42,15 @@
              :ln (#~s'.+:-'' (cw:sup cw:n)))
 
 (define-application-frame pkg-doc (cw:tree)
- ((info :accessor info :initform ""))
+ ((info :accessor info :initform "")
+  (abc :accessor abc :initform 'func))   ; 26.4.19
   (:command-table (pkg-doc :inherit-from (cw:tree)))
   (:panes 
    (tree-pane :application :display-function 'cw:display-tree :incremental-redisplay t :end-of-line-action :allow :end-of-page-action :allow)
    (info-pane :application :display-function 'disp-info :incremental-redisplay t :end-of-page-action :allow))
   (:layouts (double (horizontally () tree-pane (make-pane 'clim-extensions:box-adjuster-gadget) info-pane))))
 
-(add-menu-item-to-command-table 'pkg-doc "textsize" :command 'txt-size) ;not working <---
+;(add-menu-item-to-command-table 'pkg-doc "textsize" :command 'txt-size) ;not working <---     ; error COMMAND-ALREADY-PRESENT  22.8.19 auskommentiert
 
 (defun disp-info (f p) 
   (declare (ignore f))
@@ -137,19 +143,19 @@
      #+quicklisp(load-package pkg)))
 
 ; style warning: The variable SYS is defined but never used
-(defun load-package (p) 
+#;(defun load-package (p) 
   (let ((pkg (sys2pkg p))
         (sys (pkg2sys p)))
     (and (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
          (create-tview  pkg))))
 
-(defun load-package (p) 
+#;(defun load-package (p) 
   (let ((pkg (sys2pkg p))
         (sys (pkg2sys p)))
     (and (or (find-package pkg) #+quicklisp(ignore-errors (ql:quickload sys)))
          (create-tview  pkg))))
 
-(defun load-package (p) 
+#;(defun load-package (p) 
   (let ((pkg (sys2pkg p))
         (sys (pkg2sys p)))
     (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
@@ -164,23 +170,36 @@
 
 
 ;; 2.4.19 ev pkg-tree-a   für alfabet sort
-(defun create-tview (pkg)
+#;(defun create-tview (pkg)
   (cw-utils::t2h-r (pkg-tree pkg))
   (with-application-frame (f) 
     (setf (cw:group f) (make-instance 'node-pkg :sup (package-name pkg) :disp-inf t)) 
     (redisplay-frame-panes f :force-p t)))
+
+;26.4.19, geht prinzipiell, das pkg muß allerdings neu geladen werden. ev mit layout?? ideal wäre layout zu wechseln ohne neu zu laden <----
+;; siehe auch clim:toggle-button   ....   <----
+(defun create-tview (pkg)
+  (with-application-frame (f) 
+    (if (eq (abc *application-frame*) 'abc)
+      (cw-utils::t2h-r (alfabet pkg))
+      (cw-utils::t2h-r (pkg-tree pkg)))
+    (setf (cw:group f) (make-instance 'node-pkg :sup (package-name pkg) :disp-inf t)) 
+    (redisplay-frame-panes f :force-p t)))
+
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ;(define-pkg-doc-command (alfabet :menu t) ()
 ; ;;;;;;;;;; (setf (info *application-frame*) (format t "~{~&  ~a~}" (sort *modules* 'string<))))
 ; use toggle pkg-tree pkg-tree-a   function call  <----
 ;)
+(define-pkg-doc-command (toggle-alfabeta :menu t) ()   
+  (setf (abc *application-frame*) (if (eq (abc *application-frame*) 'abc) 'func 'abc)))
 
-;---------
+
 (define-pkg-doc-command show-info ((item 'string :gesture :select))   
   (setf (info *application-frame*) item))
 
-(define-pkg-doc-command (cl-apropos :menu t) () ; common-lisp apropos
+#;(define-pkg-doc-command (cl-apropos :menu t) () ; common-lisp apropos
   (setf (info *application-frame*) 
         (apropos (accept 'string) (accept 'string :default nil) 'external-only)))
 

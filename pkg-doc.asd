@@ -6,16 +6,18 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on (#:hans-helper
-               clim-widgets  ;                manifest nsort ;
-               webmacros
-
-               alexandria
-               ;asdf
-               stdutils
-               repl-utilities)
-  :components ((:file "package")
-               (:file "pkg-doc")
-               (:file "gui-clim")
-               (:file "gui-html")
-               (:file "test")))
+  :depends-on 
+  (clim-widgets  ;     #:hans-helper           
+    webmacros
+    manifest nsort 
+    alexandria
+;    asdf
+    stdutils
+    repl-utilities)
+  :components 
+  ((:file "package")
+   (:file "pkg-doc")
+   (:file "gui-clim")
+   ;(:file "gui-html")
+   ;(:file "test")
+   ))

@@ -9,9 +9,11 @@
 ;from html-pkg-doc  <-------
 
 (in-package #:pkg-doc)
-(named-readtables:in-readtable h:w)
-(markup:enable-markup-syntax)
-(cl-interpol:enable-interpol-syntax)
+;(named-readtables:in-readtable h:w)
+;(markup:enable-markup-syntax)
+;(cl-interpol:enable-interpol-syntax)
+;(h:rt w:w)
+(w:w)
 
 ;==============================================================
 ; 0) SYS-INFO
