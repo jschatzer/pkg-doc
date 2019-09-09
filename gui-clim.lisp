@@ -81,6 +81,7 @@
             (format s "~(~a~)" x)))
         (#~d'(&[^ )]+)'r (princ-to-string l))))
 
+;orig
 (defun tview (tree key)
   (cw-utils::t2h-r tree)
   (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string 'pkg-doc :right 800))
@@ -199,7 +200,7 @@
 (define-pkg-doc-command show-info ((item 'string :gesture :select))   
   (setf (info *application-frame*) item))
 
-#;(define-pkg-doc-command (cl-apropos :menu t) () ; common-lisp apropos
+(define-pkg-doc-command (cl-apropos :menu t) () ; common-lisp apropos
   (setf (info *application-frame*) 
         (apropos (accept 'string) (accept 'string :default nil) 'external-only)))
 
