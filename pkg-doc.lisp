@@ -169,6 +169,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 ;The name "CL-COLORS2" does not designate any package
 (let ((sys-pkg '(("mcclim" . "CLIM")
                  ("alexandria" . "ALEXANDRIA.0.DEV")
+                 ;("font-discovery" . "ORG.SHIRAKUMO.FONT-DISCOVERY") ; 14.10.2019,,, geht nicht
                  ;("oneliner" . "CL-ONELINER") ;??
                  ("cl-jpeg" . "JPEG"))))
   (defun pkg2sys (p) (or (car (rassoc p sys-pkg :test 'equal)) (string-downcase p)))

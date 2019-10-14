@@ -81,10 +81,25 @@
             (format s "~(~a~)" x)))
         (#~d'(&[^ )]+)'r (princ-to-string l))))
 
+#|
 ;orig
 (defun tview (tree key)
   (cw-utils::t2h-r tree)
-  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string 'pkg-doc :right 800))
+;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string 'pkg-doc :right 800))
+
+;; obiges bis 11.10.19
+;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string :pretty-name "pkg-doc" :right 800))
+
+;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string :right 800))
+; 14.10.2019
+  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'pkg-doc 'string :right 800))
+|#
+
+;(defun tview (tree &optional (key (caar tree)))
+(defun tview (tree key)
+  (cw-utils::t2h-r tree)
+  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'pkg-doc 'string :right 800))
+
 
 ;==============================================================
 ; 0) MENU BAR
