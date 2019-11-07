@@ -37,9 +37,9 @@
 ; 3) GUI
 ;==============================================================
 ;create node- and leaf-classes, and corresponding methods
-(cw:inf-meth :nc node-pkg
-             :nn (let ((n (cw:sup cw:n))) (if (#~m':-$' n) (#~s'-$'' n) (#~s'.+:-'' n)))
-             :ln (#~s'.+:-'' (cw:sup cw:n)))
+(cw:define-node-methods :nc node-pkg
+             :nn (let ((n (cw:name cw:n))) (if (#~m':-$' n) (#~s'-$'' n) (#~s'.+:-'' n)))
+             :ln (#~s'.+:-'' (cw:name cw:n)))
 
 (define-application-frame pkg-doc (cw:tree)
  ((info :accessor info :initform "")
@@ -47,12 +47,12 @@
   (:command-table (pkg-doc :inherit-from (cw:tree)))
   (:panes 
    (tree-pane :application :display-function 'cw:display-tree :incremental-redisplay t :end-of-line-action :allow :end-of-page-action :allow)
-   (info-pane :application :display-function 'disp-info :incremental-redisplay t :end-of-page-action :allow))
+   (info-pane :application :display-function 'show-childreno :incremental-redisplay t :end-of-page-action :allow))
   (:layouts (double (horizontally () tree-pane (make-pane 'clim-extensions:box-adjuster-gadget) info-pane))))
 
 ;(add-menu-item-to-command-table 'pkg-doc "textsize" :command 'txt-size) ;not working <---     ; error COMMAND-ALREADY-PRESENT  22.8.19 auskommentiert
 
-(defun disp-info (f p) 
+(defun show-childreno (f p) 
   (declare (ignore f))
   (let* ((pkg (cw:item-name (cw:group *application-frame*)))
          (inf-ap-fr (info *application-frame*))
@@ -85,20 +85,24 @@
 ;orig
 (defun tview (tree key)
   (cw-utils::t2h-r tree)
-;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string 'pkg-doc :right 800))
+;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string 'pkg-doc :right 800))
 
 ;; obiges bis 11.10.19
-;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string :pretty-name "pkg-doc" :right 800))
+;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :pretty-name "pkg-doc" :right 800))
 
-;  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'string :right 800))
+;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :right 800))
 ; 14.10.2019
-  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'pkg-doc 'string :right 800))
-|#
+  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
+
 
 ;(defun tview (tree &optional (key (caar tree)))
 (defun tview (tree key)
   (cw-utils::t2h-r tree)
-  (cw:tree-view (make-instance 'node-pkg :sup key :disp-inf t) 'pkg-doc 'string :right 800))
+  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
+|#
+(defun tview (tree key)
+  (cw-utils::t2h-r tree)
+  (cw:tree-view (make-instance 'node-pkg :name key :show-children t) 'pkg-doc 'string :right 800))
 
 
 ;==============================================================
@@ -189,7 +193,7 @@
 #;(defun create-tview (pkg)
   (cw-utils::t2h-r (pkg-tree pkg))
   (with-application-frame (f) 
-    (setf (cw:group f) (make-instance 'node-pkg :sup (package-name pkg) :disp-inf t)) 
+    (setf (cw:group f) (make-instance 'node-pkg :name (package-name pkg) :show-children t)) 
     (redisplay-frame-panes f :force-p t)))
 
 ;26.4.19, geht prinzipiell, das pkg muß allerdings neu geladen werden. ev mit layout?? ideal wäre layout zu wechseln ohne neu zu laden <----
@@ -199,7 +203,7 @@
     (if (eq (abc *application-frame*) 'abc)
       (cw-utils::t2h-r (alfabet pkg))
       (cw-utils::t2h-r (pkg-tree pkg)))
-    (setf (cw:group f) (make-instance 'node-pkg :sup (package-name pkg) :disp-inf t)) 
+    (setf (cw:group f) (make-instance 'node-pkg :name (package-name pkg) :show-children t)) 
     (redisplay-frame-panes f :force-p t)))
 
 
