@@ -168,6 +168,7 @@ iterate-20180228-git/doc/tex/iterate-manual.pdf
 
 ;The name "CL-COLORS2" does not designate any package
 (let ((sys-pkg '(("mcclim" . "CLIM")
+                 ;("clx" . "XLIB") ; 12.2.2020
                  ("alexandria" . "ALEXANDRIA.0.DEV")
                  ;("font-discovery" . "ORG.SHIRAKUMO.FONT-DISCOVERY") ; 14.10.2019,,, geht nicht
                  ;("oneliner" . "CL-ONELINER") ;??

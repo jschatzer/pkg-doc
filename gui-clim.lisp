@@ -159,6 +159,7 @@
 ; style warning; The variable PKG is defined but never used
 (defun select-pkg (system-category)
   (let ((pkg (string-upcase (menu-choose (create-menu-clim system-category) 
+                                         :cache t   ; 18.1.20 ql ladet trotzdem nicht schneller
                                          :printer 'print-numbered-pkg :n-columns 6))))     ; 5 haben nicht platz, es werden dzt nur 4 angezeigt, ql geht nur bis s...., 31.3.19
      #+quicklisp(load-package pkg)))
 
@@ -212,7 +213,7 @@
 ; ;;;;;;;;;; (setf (info *application-frame*) (format t "~{~&  ~a~}" (sort *modules* 'string<))))
 ; use toggle pkg-tree pkg-tree-a   function call  <----
 ;)
-(define-pkg-doc-command (toggle-alfabeta :menu t) ()   
+(define-pkg-doc-command (toggle-alfabeta :menu "ToggleAbc") ()    ; t bis 18.1.20
   (setf (abc *application-frame*) (if (eq (abc *application-frame*) 'abc) 'func 'abc)))
 
 
