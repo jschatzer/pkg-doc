@@ -7,12 +7,11 @@
   :version "0.0.1"
   :serial t
   :depends-on 
-  (clim-widgets  ;     #:hans-helper           
-    webmacros
-    manifest nsort 
+  (stdutils  
+    clim-widgets nsort 
+    ; webmacros ; hans-helper           
+    manifest 
     alexandria
-;    asdf
-    stdutils
     repl-utilities)
   :components 
   ((:file "package")

@@ -2,11 +2,8 @@
 
 (in-package #:pkg-doc)
 ;(in-package gui-clim)
-(named-readtables:in-readtable h:hh)
-
-;geht
-;(print (pkg-doc:pkg-tree "HANS-HELPER"))
-;@END
+;(named-readtables:in-readtable h:hh)
+(set-dispatch-macro-character #\# #\~ 'perlre:|#~-reader|)
 
 ;==============================================================
 ; 0) SYS-INFO
@@ -81,29 +78,9 @@
             (format s "~(~a~)" x)))
         (#~d'(&[^ )]+)'r (princ-to-string l))))
 
-#|
-;orig
-(defun tview (tree key)
-  (cw-utils::t2h-r tree)
-;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string 'pkg-doc :right 800))
-
-;; obiges bis 11.10.19
-;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :pretty-name "pkg-doc" :right 800))
-
-;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :right 800))
-; 14.10.2019
-  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
-
-
-;(defun tview (tree &optional (key (caar tree)))
-(defun tview (tree key)
-  (cw-utils::t2h-r tree)
-  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
-|#
 (defun tview (tree key)
   (cw-utils::t2h-r tree)
   (cw:tree-view (make-instance 'node-pkg :name key :show-children t) 'pkg-doc 'string :right 800))
-
 
 ;==============================================================
 ; 0) MENU BAR
@@ -111,16 +88,10 @@
 ; 2) create hierarchical menu to choose a package or a system. 
 ;    Hierarchy by symbol-name: com. cl- asdf/ ...
 ;----------------------------------------------------------------------------------------
-;(defun create-menu (l)
-#;(defun create-menu-clim (l)
-  "turn a list into a sorted numbered list"
-  (create-menu% (hierarchy-by-name l)))
-
 ; 1.4.19
 (defun create-menu-clim (l)
   "turn a list into a sorted numbered list"
   (create-menu% (pack l)))
-
 
 (defun create-menu% (l &aux (n 0))
   "insert :items and :value into a tree to create a clim-menu"
@@ -163,39 +134,12 @@
                                          :printer 'print-numbered-pkg :n-columns 6))))     ; 5 haben nicht platz, es werden dzt nur 4 angezeigt, ql geht nur bis s...., 31.3.19
      #+quicklisp(load-package pkg)))
 
-; style warning: The variable SYS is defined but never used
-#;(defun load-package (p) 
-  (let ((pkg (sys2pkg p))
-        (sys (pkg2sys p)))
-    (and (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
-         (create-tview  pkg))))
-
-#;(defun load-package (p) 
-  (let ((pkg (sys2pkg p))
-        (sys (pkg2sys p)))
-    (and (or (find-package pkg) #+quicklisp(ignore-errors (ql:quickload sys)))
-         (create-tview  pkg))))
-
-#;(defun load-package (p) 
-  (let ((pkg (sys2pkg p))
-        (sys (pkg2sys p)))
-    (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
-         (create-tview  pkg)))
-
 ;(find-package "ASDF-PACKAGE-SYSTEM")  ; nil
 (defun load-package (p) 
   (let ((pkg (sys2pkg p))
         (sys (pkg2sys p)))
     (or (find-package pkg) #+quicklisp(ignore-errors (ql:quickload sys)))
          (ignore-errors (create-tview  pkg))))
-
-
-;; 2.4.19 ev pkg-tree-a   für alfabet sort
-#;(defun create-tview (pkg)
-  (cw-utils::t2h-r (pkg-tree pkg))
-  (with-application-frame (f) 
-    (setf (cw:group f) (make-instance 'node-pkg :name (package-name pkg) :show-children t)) 
-    (redisplay-frame-panes f :force-p t)))
 
 ;26.4.19, geht prinzipiell, das pkg muß allerdings neu geladen werden. ev mit layout?? ideal wäre layout zu wechseln ohne neu zu laden <----
 ;; siehe auch clim:toggle-button   ....   <----
@@ -215,7 +159,6 @@
 ;)
 (define-pkg-doc-command (toggle-alfabeta :menu "ToggleAbc") ()    ; t bis 18.1.20
   (setf (abc *application-frame*) (if (eq (abc *application-frame*) 'abc) 'func 'abc)))
-
 
 (define-pkg-doc-command show-info ((item 'string :gesture :select))   
   (setf (info *application-frame*) item))
@@ -263,42 +206,100 @@ CONFIGURE-POSSIBILITIES:
 
 (defun pd () (clim-sys:make-process #'pkg-doc))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-@END
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; END ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-#|
-(defun pkg-description (s pkg)
-  "system description"
-  (let ((nr (length (pkg-symbols pkg)))
-        (a1 (car (asdf-description pkg)))
-        (a2 (cadr (asdf-description pkg)))
-        (a3 (readme-text pkg)))
-    (format s "Nickname: ~{~a~}~%" (package-nicknames pkg))
-    (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
-
-    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
-"-------------------------
- Package Documentaiton String
--------------------------~2%"))
-
-
-    (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
-"-------------------------
- ASDF Description
--------------------------"))
-  (with-drawing-options (s :text-face :bold) (format s "~&SHORT: ")) (format s "~a" a1)
-  (with-drawing-options (s :text-face :bold) (format s "~2&LONG: ")) (format s "~a~%" a2)
-  (with-drawing-options (s :text-face :bold :ink +red+) (format s 
-"-------------------------
- README
--------------------------"))
-  (format s "~&~a" a3)))
-|#
-
-#;(defun print-numbered-pkg (item strm)
-  (if (#~m'[-./]$' (car item))
-    (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
-    (princ (string-downcase (car item)) strm)))
-
-
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; @END
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 
+; #|
+; (defun pkg-description (s pkg)
+;   "system description"
+;   (let ((nr (length (pkg-symbols pkg)))
+;         (a1 (car (asdf-description pkg)))
+;         (a2 (cadr (asdf-description pkg)))
+;         (a3 (readme-text pkg)))
+;     (format s "Nickname: ~{~a~}~%" (package-nicknames pkg))
+;     (with-drawing-options (s :ink +red+) (format s "~a " nr)) (format s "external-symbols~%")
+; 
+;     (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+; "-------------------------
+;  Package Documentaiton String
+; -------------------------~2%"))
+; 
+; 
+;     (with-drawing-options (s :ink +red+ :text-face :bold) (format s 
+; "-------------------------
+;  ASDF Description
+; -------------------------"))
+;   (with-drawing-options (s :text-face :bold) (format s "~&SHORT: ")) (format s "~a" a1)
+;   (with-drawing-options (s :text-face :bold) (format s "~2&LONG: ")) (format s "~a~%" a2)
+;   (with-drawing-options (s :text-face :bold :ink +red+) (format s 
+; "-------------------------
+;  README
+; -------------------------"))
+;   (format s "~&~a" a3)))
+; |#
+; 
+; #;(defun print-numbered-pkg (item strm)
+;   (if (#~m'[-./]$' (car item))
+;     (with-drawing-options (strm :ink +red+ :text-face :bold) (princ (string-downcase (car item)) strm))   ; stream-increment-cursur-position (stream-string-width  n)   <---
+;     (princ (string-downcase (car item)) strm)))
+; 
+; ;geht
+; ;(print (pkg-doc:pkg-tree "HANS-HELPER"))
+; ;@END
+; 
+; #|
+; ;orig
+; (defun tview (tree key)
+;   (cw-utils::t2h-r tree)
+; ;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string 'pkg-doc :right 800))
+; 
+; ;; obiges bis 11.10.19
+; ;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :pretty-name "pkg-doc" :right 800))
+; 
+; ;  (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'string :right 800))
+; ; 14.10.2019
+;   (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
+; 
+; 
+; ;(defun tview (tree &optional (key (caar tree)))
+; (defun tview (tree key)
+;   (cw-utils::t2h-r tree)
+;   (cw:tree-view (make-instance 'node-pkg :sup key :show-children t) 'pkg-doc 'string :right 800))
+; |#
+; 
+; ;(defun create-menu (l)
+; #;(defun create-menu-clim (l)
+;   "turn a list into a sorted numbered list"
+;   (create-menu% (hierarchy-by-name l)))
+; 
+; ; style warning: The variable SYS is defined but never used
+; #;(defun load-package (p) 
+;   (let ((pkg (sys2pkg p))
+;         (sys (pkg2sys p)))
+;     (and (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
+;          (create-tview  pkg))))
+; 
+; #;(defun load-package (p) 
+;   (let ((pkg (sys2pkg p))
+;         (sys (pkg2sys p)))
+;     (and (or (find-package pkg) #+quicklisp(ignore-errors (ql:quickload sys)))
+;          (create-tview  pkg))))
+; 
+; #;(defun load-package (p) 
+;   (let ((pkg (sys2pkg p))
+;         (sys (pkg2sys p)))
+;     (or (find-package pkg) #+quicklisp(ql:quickload sys)) 
+;          (create-tview  pkg)))
+; 
+; 
+; ;; 2.4.19 ev pkg-tree-a   für alfabet sort
+; #;(defun create-tview (pkg)
+;   (cw-utils::t2h-r (pkg-tree pkg))
+;   (with-application-frame (f) 
+;     (setf (cw:group f) (make-instance 'node-pkg :name (package-name pkg) :show-children t)) 
+;     (redisplay-frame-panes f :force-p t)))
+; 
+; 
