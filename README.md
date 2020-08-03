@@ -1,16 +1,12 @@
 # pkg-doc
-### _Your Name <your.name@example.com>_
 
-This is a project to do ... something.
+View package documentation in a clim-treeview:
 
-## License
-
-Specify license here
+(ql:quickload :pkg-doc)
+(pkg-doc:pd)
 
 
--????-------------------------------------------
-;;; ql:quickload :pkg-doc 
-(NAME-CONFLICT #<PACKAGE "COM.GIGAMONKEYS.UTILITIES"> EXPORT SPLIT-SEQUENCE::PARTITION-IF-NOT SPLIT-SEQUENCE::PARTITION-IF-NOT COM.GIGAMONKEYS.UTILITIES:PARTITION-IF-NOT)
+; to see your own projects set this variable in pkg-doc.lisp to your lisp-projects-directory
+(defvar my-project-dir #P"~/common-lisp/")
 
-to resolve it put stdutils first in :depends-on
-------------------------------------------------
+

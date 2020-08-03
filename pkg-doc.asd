@@ -1,9 +1,9 @@
 ;;;; pkg-doc.asd
 
 (asdf:defsystem #:pkg-doc
-  :description "Describe pkg-doc here"
-  :author "Your Name <your.name@example.com>"
-  :license  "Specify license here"
+  :description "View package documentation in a clim-treeview"
+  :author "<j.schatzer@tin.it>"
+  :license  "BSD Simplified"
   :version "0.0.1"
   :serial t
   :depends-on 
